@@ -1,442 +1,639 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import { Search, MapPin, Filter, Heart, Star, Sparkles, Globe, Clock, X } from "lucide-react";
-import { fetchPackages } from "../../services/package.service";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Search, MapPin, Filter, Heart, Star, Sparkles, Globe, Clock,
+  X, GitCompare, Eye, Loader, LayoutGrid, List,
+} from "lucide-react";
 import { TravelPackage } from "../../types/package";
 
-const categories = ["All", "solo", "family", "couple", "adventure", "relaxation"];
-const sortOptions = ["Recommended", "Price: Low to High", "Price: High to Low", "Rating"];
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const CATEGORIES = ["All", "solo", "family", "couple", "adventure", "relaxation"];
+const SORT_OPTIONS = [
+  { value: "recommended", label: "Recommended" },
+  { value: "price-asc", label: "Price: Low → High" },
+  { value: "price-desc", label: "Price: High → Low" },
+  { value: "rating", label: "Highest Rated" },
+];
+const PAGE_SIZE = 9;
 
-export default function ExplorePage() {
-  const [packages, setPackages] = useState<TravelPackage[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [budgetRange, setBudgetRange] = useState([0, 2500]);
-  const [sortOption, setSortOption] = useState("Recommended");
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<TravelPackage | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+// ─── Wishlist helpers ─────────────────────────────────────────────────────────
+function getWishlist(): string[] {
+  if (typeof window === "undefined") return [];
+  try { return JSON.parse(localStorage.getItem("wishlist") || "[]"); } catch { return []; }
+}
+function toggleWishlistItem(id: string): boolean {
+  const list = getWishlist();
+  const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+  localStorage.setItem("wishlist", JSON.stringify(next));
+  return next.includes(id);
+}
 
-  useEffect(() => {
-    const loadPackages = async () => {
-      setLoading(true);
-      try {
-        const response = await fetchPackages();
-        setPackages(response.packages || []);
-      } catch {
-        setError("Could not load packages. Please make sure the backend is running.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPackages();
-  }, []);
-
-  const filteredDestinations = useMemo(() => {
-    let results = packages;
-
-    if (selectedCategory !== "All") {
-      results = results.filter(dest => dest.category.toLowerCase() === selectedCategory.toLowerCase());
-    }
-
-    if (searchTerm.trim()) {
-      results = results.filter(dest =>
-        dest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dest.destination?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dest.destination?.country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        dest.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    results = results.filter(dest => dest.price >= budgetRange[0] && dest.price <= budgetRange[1]);
-
-    if (sortOption === "Price: Low to High") {
-      results = [...results].sort((a, b) => a.price - b.price);
-    } else if (sortOption === "Price: High to Low") {
-      results = [...results].sort((a, b) => b.price - a.price);
-    } else if (sortOption === "Rating") {
-      results = [...results].sort((a, b) => b.rating - a.rating);
-    }
-
-    return results;
-  }, [searchTerm, selectedCategory, budgetRange, sortOption, packages]);
-
+// ─── Grid Card ────────────────────────────────────────────────────────────────
+function GridCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishlist }: {
+  pkg: TravelPackage; onQuickView: (p: TravelPackage) => void;
+  onCompare: (p: TravelPackage) => void; inCompare: boolean;
+  wishlisted: boolean; onWishlist: (id: string) => void;
+}) {
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-20">
-      <div className="container mx-auto px-4 md:px-6 pt-32">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="rounded-4xl bg-linear-to-r from-brand-600 via-indigo-600 to-cyan-600 p-10 shadow-2xl shadow-brand-500/20 text-white overflow-hidden"
-        >
-          <div className="grid gap-8 lg:grid-cols-[1.2fr,0.8fr] items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium backdrop-blur">
-                <Sparkles className="text-white" size={18} />
-                AI-powered Explore
-              </div>
-              <h1 className="mt-6 text-4xl font-bold leading-tight lg:text-5xl">
-                Discover curated travel experiences with intelligent search
-              </h1>
-              <p className="mt-4 max-w-2xl text-base text-white/80">
-                Filter by budget, vibe, rating and category. Explore top destinations with immersive visuals and instant recommendations.
-              </p>
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-3xl bg-white/10 p-6 backdrop-blur border border-white/10">
-                  <div className="flex items-center gap-3 text-2xl font-semibold">
-                    <Star className="text-yellow-300" size={28} />
-                    <span>4.8+</span>
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">Top rated recommendations</p>
-                </div>
-                <div className="rounded-3xl bg-white/10 p-6 backdrop-blur border border-white/10">
-                  <div className="flex items-center gap-3 text-2xl font-semibold">
-                    <Globe className="text-cyan-200" size={28} />
-                    <span>120+</span>
-                  </div>
-                  <p className="mt-3 text-sm text-white/80">Unique destinations worldwide</p>
-                </div>
-              </div>
-            </div>
+    <motion.article layout initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+      className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-brand-500/40 hover:shadow-xl hover:shadow-brand-500/10 transition-all duration-300">
+      <div className="relative h-52 overflow-hidden">
+        <img src={pkg.images?.[0] || "/api/placeholder/400/250"} alt={pkg.title}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+        <div className="absolute top-3 left-3 flex gap-1.5">
+          <span className="px-2.5 py-1 rounded-full bg-brand-600/90 text-white text-xs font-semibold backdrop-blur capitalize">{pkg.category}</span>
+          {pkg.isPopular && <span className="px-2.5 py-1 rounded-full bg-amber-500/90 text-white text-xs font-semibold backdrop-blur">Popular</span>}
+        </div>
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+          <button onClick={() => onWishlist(pkg._id)}
+            className={`p-2 rounded-xl backdrop-blur shadow transition-all ${wishlisted ? "bg-red-500 text-white" : "bg-white/90 text-slate-700 hover:bg-red-50 hover:text-red-500"}`}>
+            <Heart size={14} className={wishlisted ? "fill-current" : ""} />
+          </button>
+          <button onClick={() => onCompare(pkg)}
+            className={`p-2 rounded-xl backdrop-blur shadow transition-all ${inCompare ? "bg-brand-600 text-white" : "bg-white/90 text-slate-700 hover:bg-brand-50 hover:text-brand-600"}`}>
+            <GitCompare size={14} />
+          </button>
+        </div>
+        <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-slate-950/80 backdrop-blur px-2.5 py-1.5 rounded-xl">
+          <Star size={12} className="text-amber-400 fill-amber-400" />
+          <span className="text-white text-xs font-semibold">{pkg.rating?.toFixed(1)}</span>
+        </div>
+      </div>
+      <div className="p-5 space-y-3">
+        <div>
+          <h3 className="font-semibold text-white group-hover:text-brand-300 transition-colors line-clamp-1">{pkg.title}</h3>
+          <p className="text-slate-400 text-xs mt-1 flex items-center gap-1"><MapPin size={11} />{pkg.destination?.name}</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {(pkg.inclusions || []).slice(0, 2).map((tag) => (
+            <span key={tag} className="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-300 text-xs border border-brand-500/20">{tag}</span>
+          ))}
+          {(pkg.inclusions || []).length > 2 && <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-xs">+{pkg.inclusions.length - 2}</span>}
+        </div>
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <span className="flex items-center gap-1"><Clock size={11} />{pkg.duration?.days}d/{pkg.duration?.nights}n</span>
+          <span>{pkg.numReviews || 0} reviews</span>
+        </div>
+        <div className="flex items-center justify-between pt-1">
+          <div>
+            <p className="text-xs text-slate-500">From</p>
+            <p className="text-xl font-bold text-white">${pkg.price.toLocaleString()}</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => onQuickView(pkg)} className="p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 transition-colors"><Eye size={14} /></button>
+            <Link href={`/package/${pkg._id}`} className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition-colors">View</Link>
+          </div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
 
-            <div className="rounded-4xl bg-white/10 p-6 backdrop-blur border border-white/10 shadow-[0_30px_80px_rgba(255,255,255,0.08)]">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.28em] text-white/70">Featured AI Picks</p>
-                  <h2 className="text-2xl font-bold">Instant match</h2>
-                </div>
-                <button className="rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white hover:bg-white/25 transition">
-                  Explore
-                </button>
-              </div>
-              <Swiper
-                modules={[Navigation, Pagination, Autoplay]}
-                navigation
-                pagination={{ clickable: true }}
-                autoplay={{ delay: 4200, disableOnInteraction: false }}
-                loop
-                className="rounded-[1.75rem] overflow-hidden"
-              >
-                {packages.slice(0, 3).map(pkg => (
-                  <SwiperSlide key={pkg._id}>
-                    <div className="relative h-72 w-full">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={pkg.images?.[0] || '/api/placeholder/800/600'} alt={pkg.title} className="h-full w-full object-cover" />
-                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-                      <div className="absolute bottom-6 left-6 right-6 text-white">
-                        <div className="text-sm uppercase tracking-[0.28em] text-white/80">{pkg.destination?.name || 'Destination'}</div>
-                        <h3 className="mt-3 text-2xl font-bold">{pkg.title}</h3>
-                        <p className="mt-2 text-sm text-white/80">{pkg.duration?.days} Days • {pkg.rating?.toFixed(1)} ⭐</p>
-                      </div>
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+// ─── List Card ────────────────────────────────────────────────────────────────
+function ListCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishlist }: {
+  pkg: TravelPackage; onQuickView: (p: TravelPackage) => void;
+  onCompare: (p: TravelPackage) => void; inCompare: boolean;
+  wishlisted: boolean; onWishlist: (id: string) => void;
+}) {
+  return (
+    <motion.article layout initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+      className="group bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-brand-500/40 transition-all duration-300 flex">
+      <div className="relative w-44 shrink-0 overflow-hidden">
+        <img src={pkg.images?.[0] || "/api/placeholder/200/200"} alt={pkg.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {pkg.isPopular && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500/90 text-white text-xs font-semibold">Popular</span>}
+      </div>
+      <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-300 text-xs border border-brand-500/20 capitalize">{pkg.category}</span>
+              <span className="flex items-center gap-1 text-xs text-amber-400"><Star size={11} className="fill-amber-400" />{pkg.rating?.toFixed(1)}</span>
+            </div>
+            <h3 className="font-semibold text-white group-hover:text-brand-300 transition-colors line-clamp-1">{pkg.title}</h3>
+            <p className="text-slate-400 text-xs mt-0.5 flex items-center gap-1"><MapPin size={11} />{pkg.destination?.name}, {pkg.destination?.country}</p>
+          </div>
+          <div className="flex gap-1.5 shrink-0">
+            <button onClick={() => onWishlist(pkg._id)} className={`p-1.5 rounded-lg transition-colors ${wishlisted ? "text-red-400" : "text-slate-500 hover:text-red-400"}`}>
+              <Heart size={14} className={wishlisted ? "fill-current" : ""} />
+            </button>
+            <button onClick={() => onCompare(pkg)} className={`p-1.5 rounded-lg transition-colors ${inCompare ? "text-brand-400" : "text-slate-500 hover:text-brand-400"}`}>
+              <GitCompare size={14} />
+            </button>
+          </div>
+        </div>
+        <p className="text-slate-400 text-sm line-clamp-2 my-2">{pkg.description}</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-xs text-slate-500">
+            <span className="flex items-center gap-1"><Clock size={11} />{pkg.duration?.days}d/{pkg.duration?.nights}n</span>
+            <span>{pkg.numReviews || 0} reviews</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <p className="text-lg font-bold text-white">${pkg.price.toLocaleString()}</p>
+            <div className="flex gap-1.5">
+              <button onClick={() => onQuickView(pkg)} className="p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white transition-colors"><Eye size={13} /></button>
+              <Link href={`/package/${pkg._id}`} className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition-colors">View</Link>
             </div>
           </div>
-        </motion.div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="mt-10 grid gap-6 lg:grid-cols-[1.1fr,0.9fr]"
-        >
-          <section className="rounded-4xl bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-800 p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Find your next destination</h2>
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-xl">
-                  Search by city, experience, or travel vibe and refine results instantly.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowFilters(prev => !prev)}
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-5 py-3 text-sm font-semibold text-slate-900 dark:text-white transition hover:border-brand-500"
-              >
-                <Filter size={18} />
-                {showFilters ? "Hide" : "Show"} Filters
-              </button>
+// ─── Compare Modal ────────────────────────────────────────────────────────────
+function CompareModal({ packages, onClose }: { packages: TravelPackage[]; onClose: () => void }) {
+  const [a, b] = packages;
+  const rows = [
+    { label: "Price", aVal: `$${a?.price?.toLocaleString() || "—"}`, bVal: `$${b?.price?.toLocaleString() || "—"}`, lowerIsBetter: true },
+    { label: "Duration", aVal: `${a?.duration?.days || "—"}d / ${a?.duration?.nights || "—"}n`, bVal: `${b?.duration?.days || "—"}d / ${b?.duration?.nights || "—"}n`, lowerIsBetter: false },
+    { label: "Rating", aVal: `${a?.rating?.toFixed(1) || "—"} ⭐`, bVal: `${b?.rating?.toFixed(1) || "—"} ⭐`, lowerIsBetter: false },
+    { label: "Reviews", aVal: `${a?.numReviews || 0}`, bVal: `${b?.numReviews || 0}`, lowerIsBetter: false },
+    { label: "Category", aVal: a?.category || "—", bVal: b?.category || "—", lowerIsBetter: false },
+    { label: "Destination", aVal: a?.destination?.name || "—", bVal: b?.destination?.name || "—", lowerIsBetter: false },
+    { label: "Inclusions", aVal: (a?.inclusions || []).slice(0, 3).join(", ") || "—", bVal: (b?.inclusions || []).slice(0, 3).join(", ") || "—", lowerIsBetter: false },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-y-auto">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-4xl my-4 overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between p-6 border-b border-slate-800">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><GitCompare size={20} className="text-brand-400" />Compare Packages</h2>
+          <button onClick={onClose} className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"><X size={20} /></button>
+        </div>
+        <div className="grid grid-cols-[120px_1fr_1fr] border-b border-slate-800">
+          <div className="p-4" />
+          {[a, b].map((pkg, i) => pkg ? (
+            <div key={i} className="p-4 border-l border-slate-800">
+              <img src={pkg.images?.[0] || "/api/placeholder/300/150"} alt={pkg.title} className="w-full h-28 object-cover rounded-xl mb-3" />
+              <h3 className="font-semibold text-white text-sm line-clamp-2">{pkg.title}</h3>
+              <p className="text-slate-400 text-xs mt-1">{pkg.destination?.name}</p>
             </div>
+          ) : (
+            <div key={i} className="p-4 border-l border-slate-800 flex items-center justify-center text-slate-600 text-sm">No package selected</div>
+          ))}
+        </div>
+        <div className="divide-y divide-slate-800/50">
+          {rows.map((row, i) => {
+            const aNum = parseFloat(row.aVal.replace(/[^0-9.]/g, "") || "0");
+            const bNum = parseFloat(row.bVal.replace(/[^0-9.]/g, "") || "0");
+            const aWins = aNum !== bNum && (row.lowerIsBetter ? aNum < bNum : aNum > bNum);
+            const bWins = aNum !== bNum && (row.lowerIsBetter ? bNum < aNum : bNum > aNum);
+            return (
+              <div key={i} className="grid grid-cols-[120px_1fr_1fr]">
+                <div className="p-4 text-slate-500 text-sm font-medium">{row.label}</div>
+                <div className={`p-4 border-l border-slate-800 text-sm ${aWins ? "text-green-400 font-semibold" : "text-slate-300"}`}>{row.aVal}</div>
+                <div className={`p-4 border-l border-slate-800 text-sm ${bWins ? "text-green-400 font-semibold" : "text-slate-300"}`}>{row.bVal}</div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="grid grid-cols-[120px_1fr_1fr] border-t border-slate-800 p-4 gap-3">
+          <div />
+          {[a, b].map((pkg, i) => pkg ? (
+            <Link key={i} href={`/booking?packageId=${pkg._id}`} onClick={onClose}
+              className="flex items-center justify-center py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold transition-colors">
+              Book Now
+            </Link>
+          ) : <div key={i} />)}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
-            {loading && (
-              <div className="rounded-4xl border border-slate-200 bg-slate-50 p-4 text-center text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                Loading packages from MongoDB...
-              </div>
-            )}
-            {error && (
-              <div className="rounded-4xl border border-rose-200 bg-rose-50 p-4 text-center text-rose-700 dark:border-rose-700 dark:bg-rose-950/20 dark:text-rose-200">
-                {error}
-              </div>
-            )}
-            <div className="mt-6 grid gap-4 md:grid-cols-[1fr,0.8fr]">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-4 top-4 text-slate-400" size={18} />
-                <input
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  placeholder="Search for destinations, themes, or locations"
-                  className="w-full rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-12 py-4 text-slate-900 dark:text-white placeholder:text-slate-400 transition"
-                />
-              </div>
-              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
-                <div className="flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
-                  <span>Budget cap</span>
-                  <span className="font-semibold text-slate-900 dark:text-white">${budgetRange[1]}</span>
+// ─── Quick View Modal ─────────────────────────────────────────────────────────
+function QuickViewModal({ pkg, onClose }: { pkg: TravelPackage; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        className="relative bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl">
+        <button onClick={onClose} className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors"><X size={18} /></button>
+        <div className="grid md:grid-cols-2">
+          <div className="relative h-64 md:h-auto overflow-hidden">
+            <img src={pkg.images?.[0] || "/api/placeholder/600/400"} alt={pkg.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+          </div>
+          <div className="p-6 space-y-4">
+            <div>
+              <span className="text-xs text-brand-400 uppercase tracking-wider">{pkg.category}</span>
+              <h2 className="text-2xl font-bold text-white mt-1">{pkg.title}</h2>
+              <p className="text-slate-400 text-sm mt-1 flex items-center gap-1"><MapPin size={13} />{pkg.destination?.name}, {pkg.destination?.country}</p>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">{pkg.description}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Price", value: `$${pkg.price.toLocaleString()}` },
+                { label: "Duration", value: `${pkg.duration?.days}d/${pkg.duration?.nights}n` },
+                { label: "Rating", value: `${pkg.rating?.toFixed(1)} ⭐` },
+                { label: "Reviews", value: `${pkg.numReviews || 0}` },
+              ].map((item) => (
+                <div key={item.label} className="bg-slate-800 rounded-xl p-3">
+                  <p className="text-xs text-slate-500">{item.label}</p>
+                  <p className="text-lg font-bold text-white">{item.value}</p>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="3000"
-                  step="100"
-                  value={budgetRange[1]}
-                  onChange={e => setBudgetRange([0, Number(e.target.value)])}
-                  className="mt-4 w-full accent-brand-600"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              {categories.map(category => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => setSelectedCategory(category)}
-                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                    selectedCategory === category ? "border-brand-600 bg-brand-600 text-white" : "border-slate-200 bg-white text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-                  }`}
-                >
-                  {category}
-                </button>
               ))}
             </div>
-
-            {showFilters && (
-              <div className="mt-6 rounded-[1.75rem] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Sort by</p>
-                    <select
-                      value={sortOption}
-                      onChange={e => setSortOption(e.target.value)}
-                      className="mt-3 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-slate-900 dark:text-white"
-                    >
-                      {sortOptions.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Popular themes</p>
-                    <div className="mt-3 flex flex-wrap gap-3">
-                      {['Family', 'Honeymoon', 'Wellness', 'Nature', 'City Life'].map(tag => (
-                        <button
-                          key={tag}
-                          type="button"
-                          onClick={() => setSearchTerm(tag)}
-                          className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:border-brand-600 hover:text-brand-600 transition dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-                        >
-                          {tag}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-sm text-slate-500 dark:text-slate-400">Showing {filteredDestinations.length} experiences</p>
-                <h2 className="text-3xl font-bold">Top travel packages</h2>
-              </div>
-              <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 shadow-sm">
-                <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-                  <MapPin size={18} />
-                  <span>Available in 24 regions</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-2">
-              {filteredDestinations.length > 0 ? (
-                filteredDestinations.map(dest => (
-                  <motion.article
-                    key={dest._id}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35 }}
-                    className="group rounded-4xl bg-white dark:bg-slate-900 overflow-hidden shadow-lg border border-slate-200 dark:border-slate-800"
-                  >
-                    <div className="relative h-80 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={dest.images?.[0] || '/api/placeholder/400/250'} alt={dest.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
-                      <button className="absolute top-5 right-5 inline-flex items-center justify-center rounded-full bg-white/90 p-3 text-slate-900 shadow-lg backdrop-blur transition hover:bg-white">
-                        <Heart size={18} />
-                      </button>
-                      <div className="absolute bottom-5 left-5 text-white">
-                        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.28em] text-white/80">
-                          <span>{dest.category}</span>
-                          <span>•</span>
-                          <span>{dest.duration?.days}d / {dest.duration?.nights}n</span>
-                        </div>
-                        <h3 className="mt-3 text-2xl font-bold">{dest.title}</h3>
-                        <p className="mt-2 text-sm text-white/80">{dest.destination?.name}</p>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <div className="flex flex-wrap gap-2">
-                        {(dest.inclusions || []).slice(0, 3).map((tag: string) => (
-                          <span key={tag} className="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-200">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-6 flex items-center justify-between gap-4">
-                        <div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Starting from</p>
-                          <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-white">${dest.price}</p>
-                        </div>
-                        <div className="rounded-3xl bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                          {dest.rating?.toFixed(1)} ⭐ ({dest.numReviews || 0})
-                        </div>
-                      </div>
-                      <div className="mt-6 flex flex-wrap gap-3">
-                        <Link href={`/package/${dest._id}`} className="rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700">
-                          Book Now
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedPackage(dest)}
-                          className="rounded-full border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
-                        >
-                          Quick View
-                        </button>
-                      </div>
-                    </div>
-                  </motion.article>
-                ))
-              ) : (
-                <div className="rounded-4xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-12 text-center">
-                  <p className="text-xl font-semibold">No packages found</p>
-                  <p className="mt-3 text-slate-500 dark:text-slate-400">Try changing your filters or search terms to discover more travel experiences.</p>
-                </div>
-              )}
-            </div>
-          </section>
-        </motion.div>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.15 }}
-        className="mt-16 px-4 md:px-6"
-      >
-        <div className="container mx-auto rounded-4xl bg-brand-600 p-10 text-white shadow-2xl shadow-brand-500/20">
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div>
-              <span className="text-sm uppercase tracking-[0.3em] text-brand-100/80">AI boosted</span>
-              <h2 className="mt-4 text-3xl font-bold">Need help choosing your next trip?</h2>
-              <p className="mt-4 text-slate-100/85">Our intelligent search engine suggests the best travel packages based on your mood, dates, and budget.</p>
-            </div>
-            <div className="space-y-4">
-              <div className="rounded-3xl bg-white/10 p-6">
-                <div className="flex items-center gap-3 text-white/90">
-                  <Clock size={20} />
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.28em]">Fast results</p>
-                    <p className="mt-1 text-base">Instant search and booking recommendations.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-3xl bg-white/10 p-6">
-                <div className="flex items-center gap-3 text-white/90">
-                  <MapPin size={20} />
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.28em]">Smart filtering</p>
-                    <p className="mt-1 text-base">Budget, rating, and category filters with one click.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center justify-center">
-              <Link href="/register" className="inline-flex items-center gap-3 rounded-full bg-white px-6 py-4 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
-                <Sparkles size={20} />
-                Start planning your trip
-              </Link>
+            <div className="flex gap-3">
+              <Link href={`/package/${pkg._id}`} onClick={onClose} className="flex-1 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold text-center transition-colors">View Details</Link>
+              <Link href={`/booking?packageId=${pkg._id}`} onClick={onClose} className="flex-1 py-3 rounded-xl border border-brand-500/50 text-brand-300 hover:bg-brand-500/10 text-sm font-semibold text-center transition-colors">Book Now</Link>
             </div>
           </div>
         </div>
       </motion.div>
+    </div>
+  );
+}
 
-      {selectedPackage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
-          <div className="relative w-full max-w-4xl overflow-hidden rounded-4xl bg-white text-slate-900 shadow-2xl">
-            <button
-              type="button"
-              onClick={() => setSelectedPackage(null)}
-              className="absolute right-5 top-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-900 shadow-lg transition hover:bg-slate-200"
-            >
-              <X size={20} />
+// ─── Compare Bar ──────────────────────────────────────────────────────────────
+function CompareBar({ items, onRemove, onCompare, onClear }: {
+  items: TravelPackage[]; onRemove: (id: string) => void;
+  onCompare: () => void; onClear: () => void;
+}) {
+  return (
+    <motion.div initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-brand-500/40 rounded-2xl shadow-2xl shadow-brand-500/20 px-5 py-4 flex items-center gap-4 max-w-2xl w-full mx-4">
+      <GitCompare size={18} className="text-brand-400 shrink-0" />
+      <div className="flex-1 flex gap-3">
+        {[0, 1].map((i) => (
+          <div key={i} className={`flex-1 flex items-center gap-2 px-3 py-2 rounded-xl text-sm ${items[i] ? "bg-slate-800 text-white" : "border border-dashed border-slate-700 text-slate-600"}`}>
+            {items[i] ? (
+              <>
+                <span className="truncate flex-1">{items[i].title}</span>
+                <button onClick={() => onRemove(items[i]._id)} className="text-slate-500 hover:text-red-400 shrink-0"><X size={13} /></button>
+              </>
+            ) : (
+              <span>Select package {i + 1}</span>
+            )}
+          </div>
+        ))}
+      </div>
+      <button onClick={onCompare} disabled={items.length < 2}
+        className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold disabled:opacity-40 transition-colors shrink-0">
+        Compare
+      </button>
+      <button onClick={onClear} className="text-slate-500 hover:text-white transition-colors shrink-0"><X size={16} /></button>
+    </motion.div>
+  );
+}
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+function CardSkeleton({ view }: { view: "grid" | "list" }) {
+  if (view === "list") {
+    return (
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex animate-pulse">
+        <div className="w-44 shrink-0 bg-slate-800" />
+        <div className="flex-1 p-5 space-y-3">
+          <div className="h-4 bg-slate-800 rounded w-3/4" />
+          <div className="h-3 bg-slate-800 rounded w-1/2" />
+          <div className="h-3 bg-slate-800 rounded w-full" />
+          <div className="h-3 bg-slate-800 rounded w-5/6" />
+          <div className="flex justify-between items-center pt-2">
+            <div className="h-6 bg-slate-800 rounded w-20" />
+            <div className="h-8 bg-slate-800 rounded w-24" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden animate-pulse">
+      <div className="h-52 bg-slate-800" />
+      <div className="p-5 space-y-3">
+        <div className="h-4 bg-slate-800 rounded w-3/4" />
+        <div className="h-3 bg-slate-800 rounded w-1/2" />
+        <div className="flex gap-2"><div className="h-5 bg-slate-800 rounded-full w-16" /><div className="h-5 bg-slate-800 rounded-full w-20" /></div>
+        <div className="flex justify-between items-center pt-2">
+          <div className="h-7 bg-slate-800 rounded w-20" />
+          <div className="h-8 bg-slate-800 rounded w-16" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+export default function ExplorePage() {
+  const [allPackages, setAllPackages] = useState<TravelPackage[]>([]);
+  const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState("");
+
+  // Filters
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [maxPrice, setMaxPrice] = useState(10000);
+  const [minRating, setMinRating] = useState(0);
+  const [sort, setSort] = useState("recommended");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // UI state
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [compareList, setCompareList] = useState<TravelPackage[]>([]);
+  const [showCompare, setShowCompare] = useState(false);
+  const [quickViewPkg, setQuickViewPkg] = useState<TravelPackage | null>(null);
+
+  // Infinite scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Load all packages once
+  useEffect(() => {
+    setWishlist(getWishlist());
+    fetch(`${API_BASE}/api/packages?pageSize=100`)
+      .then((r) => r.json())
+      .then((data) => setAllPackages(data.packages || []))
+      .catch(() => setError("Could not load packages. Make sure the backend is running."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Filtered + sorted list
+  const filtered = useMemo(() => {
+    let res = allPackages;
+    if (category !== "All") res = res.filter((p) => p.category === category);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      res = res.filter((p) =>
+        p.title.toLowerCase().includes(q) ||
+        p.destination?.name?.toLowerCase().includes(q) ||
+        p.destination?.country?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q)
+      );
+    }
+    res = res.filter((p) => p.price <= maxPrice && (p.rating || 0) >= minRating);
+    if (sort === "price-asc") res = [...res].sort((a, b) => a.price - b.price);
+    else if (sort === "price-desc") res = [...res].sort((a, b) => b.price - a.price);
+    else if (sort === "rating") res = [...res].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    return res;
+  }, [allPackages, category, search, maxPrice, minRating, sort]);
+
+  const displayed = filtered.slice(0, displayedCount);
+  const hasMore = displayedCount < filtered.length;
+
+  // Infinite scroll — use ref to avoid stale closure loop
+  const hasMoreRef = useRef(hasMore);
+  const loadingMoreRef = useRef(loadingMore);
+  hasMoreRef.current = hasMore;
+  loadingMoreRef.current = loadingMore;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasMoreRef.current && !loadingMoreRef.current) {
+          setLoadingMore(true);
+          setTimeout(() => {
+            setDisplayedCount((c) => c + PAGE_SIZE);
+            setLoadingMore(false);
+          }, 500);
+        }
+      },
+      { threshold: 0.1, rootMargin: "100px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []); // empty deps — refs handle freshness
+
+  // Reset count when filters change
+  useEffect(() => { setDisplayedCount(PAGE_SIZE); }, [search, category, maxPrice, minRating, sort]);
+
+  // Wishlist toggle
+  const handleWishlist = (id: string) => {
+    toggleWishlistItem(id);
+    setWishlist(getWishlist());
+  };
+
+  // Compare toggle
+  const handleCompare = (pkg: TravelPackage) => {
+    setCompareList((prev) => {
+      if (prev.find((p) => p._id === pkg._id)) return prev.filter((p) => p._id !== pkg._id);
+      if (prev.length >= 2) return [prev[1], pkg];
+      return [...prev, pkg];
+    });
+  };
+
+  const activeFilters = [
+    search && `"${search}"`,
+    category !== "All" && category,
+    maxPrice < 10000 && `≤$${maxPrice}`,
+    minRating > 0 && `${minRating}★+`,
+  ].filter(Boolean);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 pb-32">
+      {/* Hero */}
+      <section className="relative pt-28 pb-16 overflow-hidden bg-[radial-gradient(ellipse_at_top,rgba(79,70,229,0.2),transparent_55%)]">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="inline-flex items-center gap-2 bg-brand-600/20 border border-brand-500/30 text-brand-300 px-4 py-2 rounded-full text-sm font-medium mb-5">
+              <Sparkles size={15} />
+              AI-Powered Explore
+            </div>
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              Discover Your Next{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-cyan-400">Adventure</span>
+            </h1>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
+              {allPackages.length > 0 ? `${allPackages.length} packages across ${new Set(allPackages.map((p) => p.destination?.country)).size} countries` : "Curated travel experiences worldwide"}
+            </p>
+            <div className="flex justify-center gap-6 text-sm text-slate-400">
+              <span className="flex items-center gap-1.5"><Star size={14} className="text-amber-400 fill-amber-400" />4.8+ avg rating</span>
+              <span className="flex items-center gap-1.5"><Globe size={14} className="text-cyan-400" />120+ destinations</span>
+              <span className="flex items-center gap-1.5"><MapPin size={14} className="text-brand-400" />Worldwide coverage</span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 md:px-6 space-y-6">
+        {/* Search + Controls bar */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={17} className="absolute left-4 top-3.5 text-slate-500" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search destinations, packages, themes..."
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none transition-colors" />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border transition-colors ${showFilters ? "border-brand-500 bg-brand-600/20 text-brand-300" : "border-slate-700 bg-slate-900 text-slate-400 hover:text-white"}`}>
+              <Filter size={16} />
+              Filters
+              {activeFilters.length > 0 && <span className="w-5 h-5 rounded-full bg-brand-600 text-white text-xs flex items-center justify-center">{activeFilters.length}</span>}
             </button>
-            <div className="grid gap-6 p-8 md:grid-cols-[1.05fr,0.95fr]">
-              <div className="rounded-3xl overflow-hidden bg-slate-950 text-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={selectedPackage.images?.[0] || '/api/placeholder/800/600'} alt={selectedPackage.title} className="h-full w-full object-cover" />
-              </div>
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-slate-500">{selectedPackage.destination?.country}</p>
-                  <h2 className="mt-4 text-4xl font-bold">{selectedPackage.title}</h2>
-                  <p className="mt-3 text-slate-600">{selectedPackage.destination?.name} • {selectedPackage.duration?.days} Days, {selectedPackage.duration?.nights} Nights</p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {(selectedPackage.inclusions || []).slice(0, 4).map((item: string) => (
-                    <span key={item} className="rounded-full border border-brand-600 bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-700">
-                      {item}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-slate-700">{selectedPackage.description}</p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-slate-200 p-5">
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Price</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">${selectedPackage.price}</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-200 p-5">
-                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Rating</p>
-                    <p className="mt-2 text-3xl font-bold text-slate-900">{selectedPackage.rating?.toFixed(1) || '0.0'} ⭐</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <Link href={`/package/${selectedPackage._id}`} className="rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700">
-                    View Package
-                  </Link>
-                  <Link href={`/booking?packageId=${selectedPackage._id}`} className="rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">
-                    Book Now
-                  </Link>
-                </div>
-              </div>
+            {/* View toggle */}
+            <div className="flex bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+              <button onClick={() => setView("grid")} className={`p-3 transition-colors ${view === "grid" ? "bg-brand-600 text-white" : "text-slate-400 hover:text-white"}`}><LayoutGrid size={16} /></button>
+              <button onClick={() => setView("list")} className={`p-3 transition-colors ${view === "list" ? "bg-brand-600 text-white" : "text-slate-400 hover:text-white"}`}><List size={16} /></button>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Filters panel */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                {/* Category */}
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase tracking-wider mb-3">Category</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORIES.map((cat) => (
+                      <button key={cat} onClick={() => setCategory(cat)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-colors ${category === cat ? "bg-brand-600 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Max Price */}
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase tracking-wider mb-3">Max Price: <span className="text-white font-semibold">${maxPrice.toLocaleString()}</span></label>
+                  <input type="range" min="500" max="10000" step="500" value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    className="w-full accent-brand-600" />
+                  <div className="flex justify-between text-xs text-slate-600 mt-1"><span>$500</span><span>$10,000</span></div>
+                </div>
+                {/* Min Rating */}
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase tracking-wider mb-3">Min Rating</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {[0, 3, 3.5, 4, 4.5].map((r) => (
+                      <button key={r} onClick={() => setMinRating(r)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${minRating === r ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
+                        {r === 0 ? "Any" : `${r}★+`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {/* Sort */}
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase tracking-wider mb-3">Sort By</label>
+                  <select value={sort} onChange={(e) => setSort(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:border-brand-500 focus:outline-none">
+                    {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Category pills */}
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((cat) => (
+            <button key={cat} onClick={() => setCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${category === cat ? "bg-brand-600 text-white" : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700"}`}>
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Active filter chips */}
+        {activeFilters.length > 0 && (
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs text-slate-500">Active:</span>
+            {activeFilters.map((f, i) => (
+              <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-600/20 border border-brand-500/30 text-brand-300 text-xs font-medium">
+                {f}
+              </span>
+            ))}
+            <button onClick={() => { setSearch(""); setCategory("All"); setMaxPrice(10000); setMinRating(0); setSort("recommended"); }}
+              className="text-xs text-slate-500 hover:text-white transition-colors">Clear all</button>
+          </div>
+        )}
+
+        {/* Results header */}
+        <div className="flex items-center justify-between">
+          <p className="text-slate-400 text-sm">
+            {loading ? "Loading..." : `${filtered.length} package${filtered.length !== 1 ? "s" : ""} found`}
+            {displayed.length < filtered.length && ` · showing ${displayed.length}`}
+          </p>
+          {compareList.length > 0 && (
+            <span className="text-xs text-brand-400 flex items-center gap-1.5">
+              <GitCompare size={13} />{compareList.length}/2 selected for compare
+            </span>
+          )}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-red-400 text-sm">{error}</div>
+        )}
+
+        {/* Package grid/list */}
+        {loading ? (
+          <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "space-y-4"}>
+            {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} view={view} />)}
+          </div>
+        ) : displayed.length === 0 ? (
+          <div className="text-center py-24 bg-slate-900 border border-slate-800 rounded-2xl">
+            <Search size={48} className="mx-auto text-slate-600 mb-4" />
+            <p className="text-slate-300 font-medium text-lg">No packages found</p>
+            <p className="text-slate-500 text-sm mt-1">Try adjusting your filters or search terms</p>
+            <button onClick={() => { setSearch(""); setCategory("All"); setMaxPrice(10000); setMinRating(0); }}
+              className="mt-5 px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-medium transition-colors">
+              Clear filters
+            </button>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" : "space-y-4"}>
+              {displayed.map((pkg) =>
+                view === "grid" ? (
+                  <GridCard key={pkg._id} pkg={pkg} onQuickView={setQuickViewPkg} onCompare={handleCompare}
+                    inCompare={compareList.some((p) => p._id === pkg._id)}
+                    wishlisted={wishlist.includes(pkg._id)} onWishlist={handleWishlist} />
+                ) : (
+                  <ListCard key={pkg._id} pkg={pkg} onQuickView={setQuickViewPkg} onCompare={handleCompare}
+                    inCompare={compareList.some((p) => p._id === pkg._id)}
+                    wishlisted={wishlist.includes(pkg._id)} onWishlist={handleWishlist} />
+                )
+              )}
+            </div>
+          </AnimatePresence>
+        )}
+
+        {/* Infinite scroll sentinel */}
+        <div ref={sentinelRef} className="h-4" />
+
+        {/* Loading more indicator */}
+        {loadingMore && (
+          <div className="flex justify-center py-6">
+            <div className="flex items-center gap-3 text-slate-400 text-sm">
+              <Loader size={18} className="animate-spin text-brand-400" />
+              Loading more packages...
+            </div>
+          </div>
+        )}
+
+        {/* End of results */}
+        {!loading && !loadingMore && !hasMore && displayed.length > 0 && (
+          <div className="text-center py-8 text-slate-600 text-sm">
+            ✓ All {filtered.length} packages loaded
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {quickViewPkg && <QuickViewModal pkg={quickViewPkg} onClose={() => setQuickViewPkg(null)} />}
+        {showCompare && compareList.length >= 2 && <CompareModal packages={compareList} onClose={() => setShowCompare(false)} />}
+      </AnimatePresence>
+
+      {/* Compare bar */}
+      <AnimatePresence>
+        {compareList.length > 0 && (
+          <CompareBar items={compareList} onRemove={(id) => setCompareList((p) => p.filter((x) => x._id !== id))}
+            onCompare={() => setShowCompare(true)} onClear={() => setCompareList([])} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

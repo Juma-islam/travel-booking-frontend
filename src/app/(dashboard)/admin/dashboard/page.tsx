@@ -168,7 +168,8 @@ export default function AdminDashboardPage() {
           {stats?.monthlyRevenue && stats.monthlyRevenue.length > 0 ? (
             <div className="space-y-3">
               {stats.monthlyRevenue.map((m: any, i: number) => {
-                const maxRev = Math.max(...stats.monthlyRevenue.map((x: any) => x.revenue));
+                const rev = stats.monthlyRevenue ?? [];
+                const maxRev = Math.max(...rev.map((x: any) => x.revenue));
                 const pct = maxRev > 0 ? Math.round((m.revenue / maxRev) * 100) : 0;
                 const monthName = new Date(m._id.year, m._id.month - 1).toLocaleString("default", { month: "short" });
                 return (

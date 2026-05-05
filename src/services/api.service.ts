@@ -143,6 +143,8 @@ export interface AdminStats {
   totalBookings: number;
   totalRevenue: number;
   recentBookings: Booking[];
+  monthlyRevenue?: { _id: { year: number; month: number }; revenue: number; count: number }[];
+  statusBreakdown?: { _id: string; count: number }[];
 }
 
 export const adminApi = {

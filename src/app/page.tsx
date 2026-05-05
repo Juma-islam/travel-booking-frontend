@@ -27,6 +27,23 @@ import {
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [destinations, setDestinations] = useState<any[]>([]);
+  const [destinationsLoading, setDestinationsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/destinations?isTrending=true');
+        const data = await res.json();
+        setDestinations(data.slice(0, 6)); // Top 6 destinations
+      } catch (error) {
+        console.error('Error fetching destinations:', error);
+      } finally {
+        setDestinationsLoading(false);
+      }
+    };
+    fetchDestinations();
+  }, []);
 
   const heroSlides = [
     {
@@ -205,8 +222,14 @@ export default function Home() {
       </section>
 
       {/* Featured Destinations */}
-      <section className="py-20 bg-white dark:bg-slate-900">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="py-20 bg-white dark:bg-slate-900 relative overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-40 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 bg-brand-200 dark:bg-brand-900 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+          <div className="absolute top-1/2 -right-24 w-96 h-96 bg-blue-200 dark:bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
             initial="initial"
             whileInView="animate"
@@ -222,85 +245,82 @@ export default function Home() {
             </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Santorini, Greece",
-                image: "/api/placeholder/400/300",
-                rating: 4.9,
-                reviews: 2847,
-                price: "From $1,299",
-                description: "Stunning sunsets, white-washed buildings, and crystal-clear waters"
-              },
-              {
-                name: "Tokyo, Japan",
-                image: "/api/placeholder/400/300",
-                rating: 4.8,
-                reviews: 3521,
-                price: "From $1,499",
-                description: "A perfect blend of traditional culture and cutting-edge technology"
-              },
-              {
-                name: "Bali, Indonesia",
-                image: "/api/placeholder/400/300",
-                rating: 4.7,
-                reviews: 4193,
-                price: "From $899",
-                description: "Tropical paradise with beautiful beaches and rich culture"
-              }
-            ].map((destination, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
-              >
-                <div className="relative">
-                  <img
-                    src={destination.image}
-                    alt={destination.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-800/90 px-3 py-1 rounded-full">
-                    <div className="flex items-center gap-1">
-                      <Star className="text-yellow-500 fill-current" size={16} />
-                      <span className="text-sm font-semibold">{destination.rating}</span>
+          {destinationsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl h-[450px]"></div>
+              ))}
+            </div>
+          ) : destinations.length === 0 ? (
+             <div className="text-center text-slate-500 py-10">
+                <p className="text-xl font-semibold mb-2">No destinations found.</p>
+                <p>Please add some featured destinations from the admin dashboard.</p>
+             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {destinations.map((destination, index) => (
+                <motion.div
+                  key={destination._id || index}
+                  variants={fadeInUp}
+                  whileHover={{ y: -10 }}
+                  className="group bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/20 dark:border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col"
+                >
+                  <div className="relative h-64 overflow-hidden">
+                    <img
+                      src={destination.imageUrl || "/api/placeholder/400/300"}
+                      alt={destination.name}
+                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div className="absolute top-4 right-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
+                      <div className="flex items-center gap-1">
+                        <Star className="text-yellow-500 fill-current" size={16} />
+                        <span className="text-sm font-bold text-slate-800 dark:text-white">4.9</span>
+                      </div>
+                    </div>
+
+                    <div className="absolute bottom-4 left-4 right-4 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                      <h3 className="text-2xl font-bold mb-1 drop-shadow-md">
+                        {destination.name}
+                      </h3>
+                      <div className="flex items-center text-white/90 text-sm">
+                        <MapPin size={14} className="mr-1" />
+                        {destination.country}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                    {destination.name}
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mb-4">
-                    {destination.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-slate-500 dark:text-slate-400">
-                      {destination.reviews} reviews
-                    </div>
-                    <div className="text-lg font-bold text-brand-600">
-                      {destination.price}
+                  
+                  <div className="p-6 flex-1 flex flex-col">
+                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 line-clamp-3">
+                      {destination.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                        <Users size={16} className="text-brand-500" />
+                        <span>Popular Choice</span>
+                      </div>
+                      <Link
+                        href={`/destination/${destination._id || destination.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                        className="bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-400 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-500 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 group-hover:bg-brand-600 group-hover:text-white dark:group-hover:bg-brand-500"
+                      >
+                        Explore <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+                      </Link>
                     </div>
                   </div>
-                  <Link
-                    href={`/destination/${destination.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                    className="mt-4 w-full bg-brand-600 hover:bg-brand-700 text-white py-2 px-4 rounded-lg font-medium transition-colors duration-300 inline-block text-center"
-                  >
-                    Explore
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center mt-12">
             <Link
               href="/explore"
-              className="bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg inline-flex items-center gap-2"
+              className="group bg-brand-600 hover:bg-brand-700 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 transform hover:-translate-y-1 shadow-[0_10px_20px_rgba(37,99,235,0.3)] inline-flex items-center gap-2"
             >
               View All Destinations
-              <ArrowRight size={20} />
+              <ArrowRight size={20} className="transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>

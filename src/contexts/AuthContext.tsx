@@ -33,13 +33,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!user.role) {
         try {
           const { authApi } = await import('@/services/api.service');
-          const profile = await authApi.getProfile();
-          const updatedUser: User = { ...user, role: profile.role };
+          // 2 second timeout — don't block UI for slow backend
+          const profile = await Promise.race([
+            authApi.getProfile(),
+            new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error('timeout')), 2000)
+            ),
+          ]);
+          const updatedUser: User = { ...user, role: (profile as any).role };
           localStorage.setItem('auth-user', JSON.stringify(updatedUser));
           setAuthState({ user: updatedUser, isAuthenticated: true, isLoading: false });
           return;
         } catch {
-          // Backend unreachable — default role to 'user'
+          // Backend unreachable or timeout — default role to 'user'
           const updatedUser: User = { ...user, role: 'user' };
           localStorage.setItem('auth-user', JSON.stringify(updatedUser));
           setAuthState({ user: updatedUser, isAuthenticated: true, isLoading: false });

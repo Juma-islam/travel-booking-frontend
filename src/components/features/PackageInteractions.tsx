@@ -11,8 +11,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   MessageSquare,
-  Twitter,
-  Facebook,
+  ExternalLink,
   Link as LinkIcon,
   X,
 } from "lucide-react";
@@ -234,13 +233,13 @@ function SharePanel({ packageTitle, packageId }: { packageTitle: string; package
     },
     {
       label: "Twitter / X",
-      icon: <Twitter size={16} />,
+      icon: <ExternalLink size={16} />,
       color: "bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20",
       action: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this amazing travel package: ${packageTitle}`)}&url=${encodeURIComponent(url)}`, "_blank"),
     },
     {
       label: "Facebook",
-      icon: <Facebook size={16} />,
+      icon: <ExternalLink size={16} />,
       color: "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20",
       action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank"),
     },
