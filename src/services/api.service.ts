@@ -110,6 +110,11 @@ export const bookingApi = {
       body: JSON.stringify(data),
     }),
 
+  createCheckoutSession: (bookingId: string) =>
+    request<{ url: string }>(`/api/bookings/${bookingId}/create-checkout-session`, {
+      method: "POST",
+    }),
+
   getMyBookings: (): Promise<Booking[]> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
     if (isDemoToken(token)) return Promise.resolve(DEMO_BOOKINGS);
@@ -133,6 +138,11 @@ export const bookingApi = {
     if (isDemoToken(token)) return Promise.resolve(DEMO_BOOKINGS);
     return request<Booking[]>("/api/bookings");
   },
+
+  createCheckoutSession: (bookingId: string) =>
+    request<{ url: string; sessionId: string }>(`/api/bookings/${bookingId}/checkout`, {
+      method: "POST",
+    }),
 };
 
 // ─── Admin ────────────────────────────────────────────────────────────────────

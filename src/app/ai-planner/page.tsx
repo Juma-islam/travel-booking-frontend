@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import {
   Users, Calendar, Loader, Copy, Download, Check, FileText,
   RefreshCw, Plane,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family", "Solo", "Luxury"];
 const seasons = ["Spring", "Summer", "Fall", "Winter", "Any"];
@@ -464,8 +465,10 @@ export default function AIPlannerPage() {
                     </button>
                   </div>
                 </div>
-                <div className="p-6 text-slate-300 text-sm leading-relaxed whitespace-pre-wrap font-mono">
-                  {content}
+                <div className="p-6">
+                  <article className="prose prose-invert prose-sm sm:prose-base prose-slate max-w-none text-slate-300">
+                    <ReactMarkdown>{content}</ReactMarkdown>
+                  </article>
                 </div>
               </motion.div>
             ) : null)}

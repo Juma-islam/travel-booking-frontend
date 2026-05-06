@@ -3,6 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, EffectCoverflow, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/effect-coverflow';
 import {
   Plane,
   MapPin,
@@ -29,20 +35,40 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [destinations, setDestinations] = useState<any[]>([]);
   const [destinationsLoading, setDestinationsLoading] = useState(true);
+  const [packages, setPackages] = useState<any[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/destinations?isTrending=true');
+        const res = await fetch(`${API_BASE}/api/destinations?isTrending=true`);
+        if (!res.ok) return;
         const data = await res.json();
-        setDestinations(data.slice(0, 6)); // Top 6 destinations
-      } catch (error) {
-        console.error('Error fetching destinations:', error);
+        setDestinations(data.slice(0, 6));
+      } catch {
+        // Backend not running — silently fail, static content shows
       } finally {
         setDestinationsLoading(false);
       }
     };
+
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/packages?sort=rating`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setPackages(data.packages ? data.packages.slice(0, 3) : []);
+      } catch {
+        // Backend not running — silently fail
+      } finally {
+        setPackagesLoading(false);
+      }
+    };
+
     fetchDestinations();
+    fetchPackages();
   }, []);
 
   const heroSlides = [
@@ -91,21 +117,22 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Slides */}
-        <div className="absolute inset-0">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${slide.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center'
-              }}
-            />
-          ))}
+        {/* Background Video */}
+        <div className="absolute inset-0 z-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          >
+            {/* Beautiful aerial beach travel video */}
+            <source src="https://videos.pexels.com/video-files/2882118/2882118-uhd_2560_1440_24fps.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          {/* Overlays for better text readability and gorgeous effect */}
+          <div className="absolute inset-0 bg-black/40"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-900/80 via-transparent to-transparent opacity-80"></div>
         </div>
 
         {/* Hero Content */}
@@ -237,18 +264,18 @@ export default function Home() {
             variants={stagger}
             className="text-center mb-16"
           >
-            <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
-              Featured Destinations
+            <motion.h2 variants={fadeInUp} className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2">
+              Top <span className="text-brand-600 italic underline decoration-brand-600">Destinations</span>
             </motion.h2>
-            <motion.p variants={fadeInUp} className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Discover amazing places around the world, curated by our AI for unforgettable experiences
+            <motion.p variants={fadeInUp} className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+              Explore the world's most beautiful places
             </motion.p>
           </motion.div>
 
           {destinationsLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl h-[450px]"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl h-[340px]"></div>
               ))}
             </div>
           ) : destinations.length === 0 ? (
@@ -257,60 +284,68 @@ export default function Home() {
                 <p>Please add some featured destinations from the admin dashboard.</p>
              </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {destinations.map((destination, index) => (
-                <motion.div
-                  key={destination._id || index}
-                  variants={fadeInUp}
-                  whileHover={{ y: -10 }}
-                  className="group bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-white/20 dark:border-white/10 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col"
-                >
-                  <div className="relative h-64 overflow-hidden">
-                    <img
-                      src={destination.imageUrl || "/api/placeholder/400/300"}
-                      alt={destination.name}
-                      className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
-                    <div className="absolute top-4 right-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
-                      <div className="flex items-center gap-1">
-                        <Star className="text-yellow-500 fill-current" size={16} />
-                        <span className="text-sm font-bold text-slate-800 dark:text-white">4.9</span>
-                      </div>
-                    </div>
+            <div className="relative w-full max-w-[100vw] overflow-hidden">
+              <Swiper
+                modules={[Navigation, Autoplay]}
+                grabCursor={true}
+                slidesPerView="auto"
+                spaceBetween={20}
+                loop={true}
+                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                navigation={{
+                  nextEl: '.swiper-button-next-custom',
+                  prevEl: '.swiper-button-prev-custom',
+                }}
+                className="w-full pt-2 pb-10 px-4"
+              >
+                {destinations.map((destination, index) => {
+                  const pseudoPrice = (destination.name.length * 113 % 1000) + 499;
+                  return (
+                    <SwiperSlide key={destination._id || index} className="w-[240px] sm:w-[260px] md:w-[280px]">
+                      <div className={`relative h-[340px] rounded-xl overflow-hidden group shadow-md transition-transform ${index % 2 !== 0 ? 'mt-8' : ''}`}>
+                        <img
+                          src={destination.imageUrl || "/api/placeholder/400/500"}
+                          alt={destination.name}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        {/* Gradient overlay just like the image */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                    <div className="absolute bottom-4 left-4 right-4 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      <h3 className="text-2xl font-bold mb-1 drop-shadow-md">
-                        {destination.name}
-                      </h3>
-                      <div className="flex items-center text-white/90 text-sm">
-                        <MapPin size={14} className="mr-1" />
-                        {destination.country}
+                        {/* Title at top left */}
+                        <div className="absolute top-4 left-4 z-10">
+                          <h3 className="text-xl font-bold text-white tracking-wide">
+                            {destination.name}
+                          </h3>
+                        </div>
+
+                        {/* Pricing at bottom left */}
+                        <div className="absolute bottom-4 left-4 z-10">
+                          <p className="text-white/90 text-xs font-medium mb-0.5">Starts From</p>
+                          <p className="text-white text-lg font-bold drop-shadow-md">${pseudoPrice}</p>
+                        </div>
+
+                        {/* Circular arrow button at bottom right */}
+                        <Link
+                          href={`/destination/${destination._id || destination.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                          className="absolute bottom-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors shadow-md z-10"
+                        >
+                          <ArrowRight size={16} strokeWidth={2} className="text-slate-900" />
+                        </Link>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-6 flex-1 flex flex-col">
-                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 line-clamp-3">
-                      {destination.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between mt-auto">
-                      <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                        <Users size={16} className="text-brand-500" />
-                        <span>Popular Choice</span>
-                      </div>
-                      <Link
-                        href={`/destination/${destination._id || destination.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
-                        className="bg-brand-50 dark:bg-slate-700 text-brand-600 dark:text-brand-400 hover:bg-brand-600 hover:text-white dark:hover:bg-brand-500 dark:hover:text-white px-5 py-2.5 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 group-hover:bg-brand-600 group-hover:text-white dark:group-hover:bg-brand-500"
-                      >
-                        Explore <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+                    </SwiperSlide>
+                  );
+                })}
+              </Swiper>
+              
+              {/* Carousel navigation controls below the slider */}
+              <div className="flex items-center justify-center mt-2 gap-4">
+                <button className="swiper-button-prev-custom w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all z-10 bg-white shadow-sm">
+                  <ArrowRight size={18} strokeWidth={1.5} className="rotate-180" />
+                </button>
+                <button className="swiper-button-next-custom w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700 hover:bg-slate-50 transition-all z-10 bg-white shadow-sm">
+                  <ArrowRight size={18} strokeWidth={1.5} />
+                </button>
+              </div>
             </div>
           )}
 
@@ -327,8 +362,8 @@ export default function Home() {
       </section>
 
       {/* Popular Packages */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-800">
-        <div className="container mx-auto px-4 md:px-6">
+      <section className="py-20 bg-slate-50 dark:bg-slate-800 relative overflow-hidden">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           <motion.div
             initial="initial"
             whileInView="animate"
@@ -340,94 +375,97 @@ export default function Home() {
               Popular Packages
             </motion.h2>
             <motion.p variants={fadeInUp} className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Curated travel packages designed for different budgets and preferences
+              Curated travel packages designed for different budgets and preferences, top-rated by our travelers
             </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "European Adventure",
-                duration: "10 Days",
-                destinations: "Paris, Rome, Barcelona",
-                price: "$2,499",
-                originalPrice: "$3,200",
-                rating: 4.9,
-                image: "/api/placeholder/400/250",
-                highlights: ["Guided Tours", "Hotel Stays", "Meals Included"]
-              },
-              {
-                name: "Asian Discovery",
-                duration: "12 Days",
-                destinations: "Tokyo, Kyoto, Seoul",
-                price: "$2,899",
-                originalPrice: "$3,600",
-                rating: 4.8,
-                image: "/api/placeholder/400/250",
-                highlights: ["Cultural Experiences", "Local Guides", "Premium Hotels"]
-              },
-              {
-                name: "Caribbean Paradise",
-                duration: "7 Days",
-                destinations: "Bahamas, Jamaica",
-                price: "$1,799",
-                originalPrice: "$2,200",
-                rating: 4.7,
-                image: "/api/placeholder/400/250",
-                highlights: ["Beach Resorts", "Water Activities", "All-Inclusive"]
-              }
-            ].map((pkg, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                whileHover={{ y: -5 }}
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
-              >
-                <div className="relative">
-                  <img
-                    src={pkg.image}
-                    alt={pkg.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                    {pkg.duration}
-                  </div>
-                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-slate-800/90 px-3 py-1 rounded-full">
-                    <div className="flex items-center gap-1">
-                      <Star className="text-yellow-500 fill-current" size={16} />
-                      <span className="text-sm font-semibold">{pkg.rating}</span>
+          {packagesLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="bg-white dark:bg-slate-900 animate-pulse rounded-2xl h-[450px]"></div>
+              ))}
+            </div>
+          ) : packages.length === 0 ? (
+             <div className="text-center text-slate-500 py-10">
+                <p className="text-xl font-semibold mb-2">No packages found.</p>
+                <p>Please add some travel packages from the admin dashboard.</p>
+             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {packages.map((pkg, index) => (
+                <motion.div
+                  key={pkg._id || index}
+                  variants={fadeInUp}
+                  whileHover={{ y: -5 }}
+                  className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border border-slate-100 dark:border-slate-800 flex flex-col group"
+                >
+                  <div className="relative overflow-hidden h-56">
+                    <img
+                      src={pkg.images && pkg.images.length > 0 ? pkg.images[0] : "/api/placeholder/400/250"}
+                      alt={pkg.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 left-4 bg-green-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-md">
+                      {pkg.duration?.days || 1} Days / {pkg.duration?.nights || 1} Nights
+                    </div>
+                    <div className="absolute top-4 right-4 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-md">
+                      <div className="flex items-center gap-1">
+                        <Star className="text-yellow-500 fill-current" size={16} />
+                        <span className="text-sm font-bold text-slate-800 dark:text-white">{pkg.rating || 0}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">
-                    {pkg.name}
-                  </h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm mb-2">
-                    {pkg.destinations}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {pkg.highlights.map((highlight, i) => (
-                      <span key={i} className="bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300 px-2 py-1 rounded text-xs">
-                        {highlight}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <span className="text-2xl font-bold text-brand-600">{pkg.price}</span>
-                      <span className="text-sm text-slate-500 line-through ml-2">{pkg.originalPrice}</span>
+                  
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-brand-600 transition-colors">
+                        {pkg.title}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex items-center text-slate-600 dark:text-slate-300 text-sm mb-4">
+                      <MapPin size={16} className="mr-1 text-brand-500" />
+                      {pkg.destination?.name || 'Multiple Destinations'}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {(pkg.inclusions || []).slice(0, 3).map((highlight: string, i: number) => (
+                        <span key={i} className="bg-brand-50 dark:bg-brand-900/30 text-brand-600 dark:text-brand-300 px-2 py-1 rounded text-xs font-medium border border-brand-100 dark:border-brand-800/50">
+                          {highlight}
+                        </span>
+                      ))}
+                      {pkg.inclusions && pkg.inclusions.length > 3 && (
+                        <span className="bg-slate-50 dark:bg-slate-800 text-slate-500 px-2 py-1 rounded text-xs font-medium">
+                          +{pkg.inclusions.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Starting from</div>
+                        <span className="text-2xl font-bold text-brand-600">${pkg.price}</span>
+                      </div>
+                      <Link
+                        href={`/package/${pkg._id || pkg.title.toLowerCase().replace(/\s+/g, '-')}`}
+                        className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-brand-600 hover:text-white px-5 py-2.5 rounded-xl font-medium transition-colors duration-300"
+                      >
+                        Details
+                      </Link>
                     </div>
                   </div>
-                  <Link
-                    href={`/package/${pkg.name.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 px-4 rounded-lg font-medium transition-colors duration-300 inline-block text-center"
-                  >
-                    View Details
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
+          )}
+          
+          <div className="text-center mt-12">
+            <Link
+              href="/packages"
+              className="inline-flex items-center gap-2 text-brand-600 dark:text-brand-400 font-semibold hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+            >
+              View All Packages <ArrowRight size={20} />
+            </Link>
           </div>
         </div>
       </section>
