@@ -175,6 +175,20 @@ export const adminApi = {
       method: "PUT",
       body: JSON.stringify({ role }),
     }),
+  // Reviews
+  getReviews: (status?: string) =>
+    request<any[]>(`/api/admin/reviews${status ? `?status=${status}` : ""}`),
+  updateReview: (id: string, status: string) =>
+    request<any>(`/api/admin/reviews/${id}`, { method: "PUT", body: JSON.stringify({ status }) }),
+  deleteReview: (id: string) =>
+    request<{ message: string }>(`/api/admin/reviews/${id}`, { method: "DELETE" }),
+  // AI Stats
+  getAIStats: () => request<any>("/api/admin/ai-stats"),
+  // System Logs
+  getLogs: (limit?: number) =>
+    request<any[]>(`/api/admin/logs${limit ? `?limit=${limit}` : ""}`),
+  // Settings
+  getSettings: () => request<any>("/api/admin/settings"),
 };
 
 // ─── Packages ─────────────────────────────────────────────────────────────────
@@ -195,7 +209,46 @@ export const packageApi = {
     request<{ message: string }>(`/api/packages/${id}`, { method: "DELETE" }),
 };
 
-// ─── Destinations ─────────────────────────────────────────────────────────────
+// ─── Upload ───────────────────────────────────────────────────────────────────
+
+export const uploadApi = {
+  uploadImage: async (file: File, type: "package" | "destination" | "avatar" = "package"): Promise<{ url: string; publicId: string }> => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
+    const res = await fetch(`${API_BASE}/api/upload/${type}`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(err.message || "Upload failed");
+    }
+    return res.json();
+  },
+
+  uploadMultiple: async (files: File[]): Promise<{ images: { url: string; publicId: string }[] }> => {
+    const formData = new FormData();
+    files.forEach((f) => formData.append("images", f));
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
+    const res = await fetch(`${API_BASE}/api/upload/package/multiple`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Upload failed");
+    return res.json();
+  },
+
+  deleteImage: async (publicId: string): Promise<void> => {
+    await request(`/api/upload/${encodeURIComponent(publicId)}`, { method: "DELETE" });
+  },
+};
 
 export const destinationApi = {
   getAll: () => request<any[]>("/api/destinations"),

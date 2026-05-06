@@ -154,8 +154,13 @@ export default function AIPlannerPage() {
   const generatePlan = async () => {
     setLoading(true);
     try {
-      const [recRes, itRes, budRes] = await Promise.all([
-        fetch(`${API_BASE}/api/ai/recommendations`, {
+      // Sequential calls — better error handling than Promise.all
+      let recommendations = "";
+      let itinerary = "";
+      let budget = "";
+
+      try {
+        const recRes = await fetch(`${API_BASE}/api/ai/recommendations`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -164,8 +169,15 @@ export default function AIPlannerPage() {
             season: formData.season,
             locationPreference: formData.destination,
           }),
-        }),
-        fetch(`${API_BASE}/api/ai/itinerary`, {
+        });
+        if (recRes.ok) {
+          const rec = await recRes.json();
+          recommendations = rec.result || "";
+        }
+      } catch { /* continue */ }
+
+      try {
+        const itRes = await fetch(`${API_BASE}/api/ai/itinerary`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -173,8 +185,15 @@ export default function AIPlannerPage() {
             days: formData.days,
             interests: formData.selectedInterests.join(", "),
           }),
-        }),
-        fetch(`${API_BASE}/api/ai/budget`, {
+        });
+        if (itRes.ok) {
+          const it = await itRes.json();
+          itinerary = it.result || "";
+        }
+      } catch { /* continue */ }
+
+      try {
+        const budRes = await fetch(`${API_BASE}/api/ai/budget`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -182,19 +201,22 @@ export default function AIPlannerPage() {
             days: formData.days,
             travelStyle: formData.travelType,
           }),
-        }),
-      ]);
+        });
+        if (budRes.ok) {
+          const bud = await budRes.json();
+          budget = bud.result || "";
+        }
+      } catch { /* continue */ }
 
-      const [rec, it, bud] = await Promise.all([recRes.json(), itRes.json(), budRes.json()]);
+      if (!recommendations && !itinerary && !budget) {
+        alert("Could not connect to AI backend. Make sure the backend is running on port 5000 and GEMINI_API_KEY is set.");
+        return;
+      }
 
-      setResults({
-        recommendations: rec.result || "No recommendations available",
-        itinerary: it.result || "No itinerary available",
-        budget: bud.result || "No budget information available",
-      });
+      setResults({ recommendations, itinerary, budget });
       setShowResults(true);
     } catch (error) {
-      alert("Failed to connect to backend. Make sure the server is running on port 5000.");
+      alert("Failed to generate travel plan. Please check the backend is running.");
     } finally {
       setLoading(false);
     }

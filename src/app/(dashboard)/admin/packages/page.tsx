@@ -15,6 +15,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { packageApi, destinationApi } from "@/services/api.service";
+import { ImageUpload, MultiImageUpload } from "@/components/ui/ImageUpload";
 
 const categories = ["solo", "family", "couple", "adventure", "relaxation"];
 
@@ -327,13 +328,18 @@ export default function AdminPackagesPage() {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs text-slate-400 mb-1.5">Image URLs (comma-separated)</label>
-                  <input
+                  <label className="block text-xs text-slate-400 mb-1.5">Images</label>
+                  <MultiImageUpload
+                    values={form.images ? form.images.split(",").map((s) => s.trim()).filter(Boolean) : []}
+                    onChange={(urls) => setForm((p) => ({ ...p, images: urls.join(", ") }))}
+                    max={5}
+                  />
+                  <p className="text-xs text-slate-600 mt-1">Or paste URLs: <input
                     value={form.images}
                     onChange={(e) => setForm((p) => ({ ...p, images: e.target.value }))}
-                    placeholder="https://..."
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:border-brand-500 focus:outline-none"
-                  />
+                    placeholder="https://... (comma separated)"
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-white text-xs focus:border-brand-500 focus:outline-none w-full mt-1"
+                  /></p>
                 </div>
                 <div className="flex items-center gap-3">
                   <input

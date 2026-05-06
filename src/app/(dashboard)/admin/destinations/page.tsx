@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Search, Plus, Trash2, Edit, Loader, CheckCircle, X, AlertTriangle } from "lucide-react";
 import { destinationApi } from "@/services/api.service";
+import { ImageUpload } from "@/components/ui/ImageUpload";
 
 const emptyForm = { name: "", country: "", description: "", imageUrl: "", isTrending: false };
 
@@ -131,13 +132,29 @@ export default function AdminDestinationsPage() {
               {[
                 { key: "name", label: "Name", placeholder: "e.g. Cox's Bazar" },
                 { key: "country", label: "Country", placeholder: "e.g. Bangladesh" },
-                { key: "imageUrl", label: "Image URL", placeholder: "https://..." },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
                   <label className="block text-xs text-slate-400 mb-1.5">{label}</label>
                   <input required value={(form as any)[key]} onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:border-brand-500 focus:outline-none" />
                 </div>
               ))}
+
+              {/* Image Upload */}
+              <ImageUpload
+                label="Destination Image"
+                value={form.imageUrl}
+                onChange={(url) => setForm((p) => ({ ...p, imageUrl: url }))}
+                type="destination"
+              />
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Or paste image URL</label>
+                <input
+                  value={form.imageUrl}
+                  onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
+                  placeholder="https://..."
+                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:border-brand-500 focus:outline-none"
+                />
+              </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">Description</label>
                 <textarea required rows={3} value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white text-sm focus:border-brand-500 focus:outline-none resize-none" />

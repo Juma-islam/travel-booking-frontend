@@ -5,6 +5,7 @@ import NavbarWrapper from "@/components/layout/NavbarWrapper";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import AIChatbot from "@/components/features/AIChatbot";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
             <NavbarWrapper />
             <main className="min-h-screen">{children}</main>
             <Footer />
+            <AIChatbot />
           </AuthProvider>
         </ThemeProvider>
       </body>
