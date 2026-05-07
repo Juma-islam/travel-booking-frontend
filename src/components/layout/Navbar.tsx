@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Plane, User, Search, LogOut, Sun, Moon, Sparkles } from "lucide-react";
+import { Menu, X, User, Search, LogOut, Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 const navLinks = [
   { href: "/explore", label: "Explore" },
@@ -13,6 +14,8 @@ const navLinks = [
   { href: "/ai-planner", label: "AI Planner", badge: "AI" },
   { href: "/about", label: "About" },
 ];
+
+/* ── VoyageAI Logo SVG — imported from @/components/ui/VoyageLogo ── */
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -37,17 +40,17 @@ export default function Navbar() {
       animate={{ y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glass shadow-lg shadow-slate-950/20 py-3" : "bg-transparent py-5"
+        isScrolled
+          ? "glass shadow-lg shadow-slate-200/50 dark:shadow-slate-950/30 py-3"
+          : "bg-transparent py-5"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/30">
-            <Plane size={18} className="-rotate-45 text-white" />
-          </div>
+          <VoyageLogo size={36} />
           <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Travel<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-cyan-400">AI</span>
+            Voyage<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-cyan-500">AI</span>
           </span>
         </Link>
 
@@ -74,7 +77,6 @@ export default function Navbar() {
             {theme === "dark" ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
           </button>
 
-          {/* Auth section — show skeleton while loading */}
           {isLoading ? (
             <div className="w-24 h-9 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
           ) : isAuthenticated && user ? (
@@ -94,7 +96,7 @@ export default function Navbar() {
             </div>
           ) : (
             <Link href="/login"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 shadow-lg shadow-brand-600/25 transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 shadow-lg shadow-brand-600/25 hover:shadow-brand-600/40 transition-all">
               <User size={16} />
               Sign In
             </Link>
@@ -135,9 +137,7 @@ export default function Navbar() {
                   )}
                 </Link>
               ))}
-
               <div className="h-px bg-slate-200 dark:bg-slate-700 my-2" />
-
               {isLoading ? (
                 <div className="h-12 rounded-xl bg-slate-200 dark:bg-slate-800 animate-pulse" />
               ) : isAuthenticated && user ? (

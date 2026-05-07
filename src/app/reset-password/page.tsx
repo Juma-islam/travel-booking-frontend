@@ -8,13 +8,13 @@ import {
   Lock,
   Eye,
   EyeOff,
-  Plane,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
   ShieldCheck,
   Loader,
 } from "lucide-react";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -299,11 +299,9 @@ export default function ResetPasswordPage() {
       >
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/30">
-              <Plane size={20} className="-rotate-45 text-white" />
-            </div>
+            <VoyageLogo size={40} />
             <span className="text-2xl font-bold text-white">
-              Travel<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-cyan-400">AI</span>
+              Voyage<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-cyan-400">AI</span>
             </span>
           </Link>
         </div>

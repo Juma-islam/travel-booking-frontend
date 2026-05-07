@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// ─── Shared helpers ────────────────────────────────────────────────────────────
+// --- Shared helpers ------------------------------------------------------------
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -60,7 +60,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ─── 1. HowItWorks ─────────────────────────────────────────────────────────────
+// --- 1. HowItWorks -------------------------------------------------------------
 
 const steps = [
   {
@@ -144,7 +144,7 @@ export function HowItWorks() {
   );
 }
 
-// ─── 2. TravelStyles ───────────────────────────────────────────────────────────
+// --- 2. TravelStyles -----------------------------------------------------------
 
 const styles = [
   { icon: Mountain, label: "Adventure", desc: "Hike, trek, and explore the wild", color: "from-emerald-500 to-teal-600", bg: "bg-emerald-500/10 border-emerald-500/20" },
@@ -209,7 +209,7 @@ export function TravelStyles() {
   );
 }
 
-// ─── 3. LiveStats ──────────────────────────────────────────────────────────────
+// --- 3. LiveStats --------------------------------------------------------------
 
 interface StatItem {
   value: number;
@@ -308,12 +308,12 @@ export function LiveStats() {
   );
 }
 
-// ─── 4. SeasonalDeals ──────────────────────────────────────────────────────────
+// --- 4. SeasonalDeals ----------------------------------------------------------
 
 const deals = [
   {
     season: "Summer",
-    emoji: "☀️",
+    emoji: "??",
     destination: "Maldives & Bali",
     desc: "Crystal-clear waters, overwater bungalows, and endless sunshine await.",
     discount: "30% OFF",
@@ -326,7 +326,7 @@ const deals = [
   },
   {
     season: "Winter",
-    emoji: "❄️",
+    emoji: "??",
     destination: "Swiss Alps & Norway",
     desc: "Ski the finest slopes and witness the magical Northern Lights.",
     discount: "25% OFF",
@@ -339,7 +339,7 @@ const deals = [
   },
   {
     season: "Spring",
-    emoji: "🌸",
+    emoji: "??",
     destination: "Japan & South Korea",
     desc: "Cherry blossoms, ancient temples, and vibrant street food culture.",
     discount: "20% OFF",
@@ -433,7 +433,7 @@ export function SeasonalDeals() {
   );
 }
 
-// ─── 5. TrustBadges ────────────────────────────────────────────────────────────
+// --- 5. TrustBadges ------------------------------------------------------------
 
 const badges = [
   {
@@ -512,7 +512,7 @@ export function TrustBadges() {
   );
 }
 
-// ─── 6. PartnerLogos ───────────────────────────────────────────────────────────
+// --- 6. PartnerLogos -----------------------------------------------------------
 
 const partners = [
   "SkyWings Airlines",
@@ -577,7 +577,7 @@ export function PartnerLogos() {
               key={cert}
               className="px-4 py-2 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs font-medium"
             >
-              ✓ {cert}
+              ? {cert}
             </span>
           ))}
         </motion.div>
@@ -586,7 +586,7 @@ export function PartnerLogos() {
   );
 }
 
-// ─── 7. VideoHeroCTA ───────────────────────────────────────────────────────────
+// --- 7. VideoHeroCTA -----------------------------------------------------------
 
 export function VideoHeroCTA() {
   const [playing, setPlaying] = useState(false);
@@ -691,7 +691,7 @@ export function VideoHeroCTA() {
               onClick={() => setPlaying(false)}
               className="absolute top-4 right-4 w-10 h-10 rounded-full bg-slate-800 border border-slate-700 text-white flex items-center justify-center hover:bg-slate-700 transition-colors"
             >
-              ✕
+              ?
             </button>
           </motion.div>
         </motion.div>
@@ -700,7 +700,7 @@ export function VideoHeroCTA() {
   );
 }
 
-// ─── 8. PopularDestinations ────────────────────────────────────────────────────
+// --- 8. PopularDestinations ----------------------------------------------------
 
 const destinations = [
   { name: "Santorini", country: "Greece", rating: 4.9, price: "$1,299", tag: "Romantic", img: "/api/placeholder/400/300" },
@@ -802,7 +802,7 @@ export function PopularDestinations() {
   );
 }
 
-// ─── 9. MobileAppPromo ─────────────────────────────────────────────────────────
+// --- 9. MobileAppPromo ---------------------------------------------------------
 
 const appFeatures = [
   { icon: Bell, text: "Real-time booking notifications" },
@@ -833,7 +833,7 @@ export function MobileAppPromo() {
               </span>
             </h2>
             <p className="text-slate-400 text-lg leading-relaxed mb-8">
-              Download the TravelAI app and manage every aspect of your journey — from planning to check-in — right from your phone.
+              Download the VoyageAI app and manage every aspect of your journey — from planning to check-in — right from your phone.
             </p>
 
             <ul className="space-y-3 mb-10">
@@ -904,7 +904,7 @@ export function MobileAppPromo() {
                   {/* App header */}
                   <div className="px-5 pt-4 pb-3 flex items-center justify-between">
                     <div>
-                      <p className="text-slate-500 text-xs">Good morning ✈️</p>
+                      <p className="text-slate-500 text-xs">Good morning ??</p>
                       <p className="text-white font-bold text-sm">Where to next?</p>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-600 to-cyan-500 flex items-center justify-center">
@@ -985,7 +985,7 @@ export function MobileAppPromo() {
   );
 }
 
-// ─── 10. FinalCTA ──────────────────────────────────────────────────────────────
+// --- 10. FinalCTA --------------------------------------------------------------
 
 export function FinalCTA() {
   const [email, setEmail] = useState("");
@@ -1033,7 +1033,7 @@ export function FinalCTA() {
               animate={{ scale: 1, opacity: 1 }}
               className="flex items-center justify-center gap-3 py-4 px-6 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-semibold max-w-sm mx-auto"
             >
-              <span className="text-2xl">🎉</span>
+              <span className="text-2xl">??</span>
               You&apos;re in! Check your inbox for a welcome gift.
             </motion.div>
           ) : (
@@ -1083,7 +1083,7 @@ export function FinalCTA() {
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
               className="text-5xl mb-5 inline-block"
             >
-              ✈️
+              ??
             </motion.div>
             <h2 className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight">
               Ready for your next adventure?
@@ -1131,7 +1131,7 @@ export function FinalCTA() {
   );
 }
 
-// ─── Default export: all sections ──────────────────────────────────────────────
+// --- Default export: all sections ----------------------------------------------
 
 export default function HomeSections() {
   return (

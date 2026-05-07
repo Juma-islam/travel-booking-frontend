@@ -23,7 +23,7 @@ const QUICK_PROMPTS = [
   "How to use AI Planner?",
 ];
 
-const WELCOME = `Hi! I'm **TravelAI Assistant** 👋
+const WELCOME = `Hi! I'm **VoyageAI Assistant** 👋
 
 I can help you with:
 • 🌍 Finding the perfect destination
@@ -221,7 +221,7 @@ export default function AIChatbot() {
                 <Sparkles size={18} className="text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-white text-sm">TravelAI Assistant</p>
+                <p className="font-semibold text-white text-sm">VoyageAI Assistant</p>
                 <div className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   <span className="text-white/70 text-xs">Online · Powered by Gemini AI</span>

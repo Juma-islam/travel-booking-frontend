@@ -43,7 +43,7 @@ const categories = [
     border: "border-green-500/20",
     articles: [
       { title: "How to book a package", href: "/faq#booking" },
-      { title: "Using promo codes (TRAVELAI20)", href: "/faq#booking" },
+      { title: "Using promo codes (VoyageAI20)", href: "/faq#booking" },
       { title: "Cancellation & refund policy", href: "/faq#booking" },
       { title: "Payment methods accepted", href: "/faq#booking" },
     ],
@@ -155,7 +155,7 @@ const guides = [
 
 const popularArticles = [
   { title: "How to use the AI Planner", href: "/ai-planner", badge: "Popular" },
-  { title: "Promo code TRAVELAI20 — 20% off", href: "/faq#booking", badge: "Offer" },
+  { title: "Promo code VoyageAI20 — 20% off", href: "/faq#booking", badge: "Offer" },
   { title: "Cancel or modify a booking", href: "/faq#booking", badge: null },
   { title: "Setting up the backend", href: "#backend-setup", badge: "Dev" },
   { title: "Privacy & data protection", href: "/privacy", badge: null },

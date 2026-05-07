@@ -9,7 +9,6 @@ import {
   EyeOff,
   Mail,
   Lock,
-  Plane,
   ArrowRight,
   CheckCircle,
   AlertCircle,
@@ -18,6 +17,7 @@ import {
 
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/auth.service";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -108,11 +108,9 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-brand-600 p-3 rounded-2xl text-white shadow-lg">
-              <Plane size={28} className="-rotate-45" />
-            </div>
+            <VoyageLogo size={44} />
             <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Travel<span className="text-brand-600">AI</span>
+              Voyage<span className="text-brand-600">AI</span>
             </span>
           </Link>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -270,7 +268,7 @@ export default function LoginPage() {
                   Demo access
                 </p>
                 <h3 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">
-                  Try TravelAI instantly
+                  Try VoyageAI instantly
                 </h3>
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 max-w-xl">
                   Use a demo account to preview the dashboard, recommendations, and booking flow without registration.

@@ -24,7 +24,7 @@ const contactInfo = [
   {
     icon: <Mail size={22} />,
     label: "Email Us",
-    value: "hello@travelai.com",
+    value: "hello@VoyageAI.com",
     sub: "We reply within 24 hours",
     color: "text-brand-400",
     bg: "bg-brand-500/10",

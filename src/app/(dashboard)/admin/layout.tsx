@@ -13,7 +13,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Plane,
   Bell,
   ChevronRight,
   Menu,
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardNavbar from "@/components/layout/DashboardNavbar";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -80,11 +80,9 @@ export default function AdminDashboardLayout({
         {/* Logo */}
         <div className="p-6 border-b border-slate-800">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-brand-600 p-2 rounded-xl text-white">
-              <Plane size={20} className="-rotate-45" />
-            </div>
+            <VoyageLogo size={32} />
             <span className="text-xl font-bold">
-              Travel<span className="text-brand-500">AI</span>
+              Voyage<span className="text-brand-500">AI</span>
             </span>
           </Link>
           <div className="mt-3 flex items-center gap-1.5 text-xs text-amber-400 font-medium">

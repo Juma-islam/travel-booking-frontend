@@ -15,7 +15,7 @@ export default function MaintenancePage() {
         </motion.div>
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Under Maintenance</h1>
         <p className="text-slate-400 text-lg mb-8 leading-relaxed">
-          We're making TravelAI even better. We'll be back shortly with new features and improvements.
+          We're making VoyageAI even better. We'll be back shortly with new features and improvements.
         </p>
         <div className="flex items-center justify-center gap-2 text-slate-500 text-sm mb-10">
           <Clock size={16} className="text-brand-400" />

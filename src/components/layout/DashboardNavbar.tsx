@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, Settings, LogOut, Plane, Sun, Moon, User, Menu, X } from "lucide-react";
+import { Bell, Settings, LogOut, Sun, Moon, User, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 interface DashboardNavbarProps {
   onMenuClick?: () => void;
@@ -37,11 +38,9 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
           </button>
 
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="bg-brand-600 p-1.5 rounded-lg text-white">
-              <Plane size={18} className="-rotate-45" />
-            </div>
+            <VoyageLogo size={28} />
             <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white hidden sm:inline">
-              Travel<span className="text-brand-600">AI</span>
+              Voyage<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-cyan-500">AI</span>
             </span>
           </Link>
         </div>

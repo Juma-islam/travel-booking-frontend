@@ -10,7 +10,6 @@ import {
   Mail,
   Lock,
   User,
-  Plane,
   ArrowRight,
   CheckCircle,
   AlertCircle,
@@ -18,6 +17,7 @@ import {
   Check
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -118,15 +118,13 @@ export default function RegisterPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="bg-brand-600 p-3 rounded-2xl text-white shadow-lg">
-              <Plane size={28} className="-rotate-45" />
-            </div>
+            <VoyageLogo size={44} />
             <span className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Travel<span className="text-brand-600">AI</span>
+              Voyage<span className="text-brand-600">AI</span>
             </span>
           </Link>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Join TravelAI
+            Join VoyageAI
           </h1>
           <p className="text-slate-600 dark:text-slate-300">
             Create your account and start planning amazing journeys

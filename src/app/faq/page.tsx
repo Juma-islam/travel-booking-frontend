@@ -30,7 +30,7 @@ const faqs = [
     category: "ai",
     question: "How does the AI travel recommendation work?",
     answer:
-      "Our AI analyzes your preferences — budget, travel style, season, and interests — to suggest personalized destinations and packages. It learns from your booking history and browsing behavior to improve recommendations over time. The more you use TravelAI, the smarter it gets for you.",
+      "Our AI analyzes your preferences — budget, travel style, season, and interests — to suggest personalized destinations and packages. It learns from your booking history and browsing behavior to improve recommendations over time. The more you use VoyageAI, the smarter it gets for you.",
   },
   {
     category: "ai",
@@ -54,7 +54,7 @@ const faqs = [
     category: "booking",
     question: "How do I make a booking?",
     answer:
-      "Browse packages on the Explore or Packages page, click on a package you like, then click 'Book Now'. Select your travel dates, number of guests, and payment method. Use promo code TRAVELAI20 for 20% off your first booking. You'll receive a confirmation email once your booking is processed.",
+      "Browse packages on the Explore or Packages page, click on a package you like, then click 'Book Now'. Select your travel dates, number of guests, and payment method. Use promo code VoyageAI20 for 20% off your first booking. You'll receive a confirmation email once your booking is processed.",
   },
   {
     category: "booking",
@@ -70,9 +70,9 @@ const faqs = [
   },
   {
     category: "booking",
-    question: "What is the promo code TRAVELAI20?",
+    question: "What is the promo code VoyageAI20?",
     answer:
-      "TRAVELAI20 gives you a 20% discount on any booking. Enter it in the 'Promo Code' field on the booking page before confirming. The discount is applied automatically to your total price. This code is valid for all packages and has no expiry date.",
+      "VoyageAI20 gives you a 20% discount on any booking. Enter it in the 'Promo Code' field on the booking page before confirming. The discount is applied automatically to your total price. This code is valid for all packages and has no expiry date.",
   },
   {
     category: "booking",
@@ -84,7 +84,7 @@ const faqs = [
     category: "account",
     question: "How do I create an account?",
     answer:
-      "Click 'Sign In' in the top navigation, then 'Sign up here'. Fill in your name, email, and a strong password. You can also use the demo account (demo@travelai.com / demo123) to explore the platform without registering.",
+      "Click 'Sign In' in the top navigation, then 'Sign up here'. Fill in your name, email, and a strong password. You can also use the demo account (demo@VoyageAI.com / demo123) to explore the platform without registering.",
   },
   {
     category: "account",
@@ -96,23 +96,23 @@ const faqs = [
     category: "account",
     question: "How do I become an admin?",
     answer:
-      "Admin access is granted by the system administrator. If you're setting up TravelAI for your organization, run the createAdmin script in the backend (npx tsx src/utils/createAdmin.ts) or contact us at admin@travelai.com.",
+      "Admin access is granted by the system administrator. If you're setting up VoyageAI for your organization, run the createAdmin script in the backend (npx tsx src/utils/createAdmin.ts) or contact us at admin@VoyageAI.com.",
   },
   {
     category: "travel",
     question: "Are the travel packages real?",
     answer:
-      "TravelAI is currently in demo mode. The packages shown are sample data to demonstrate the platform's features. In a production deployment, packages would be real offerings from verified travel operators. The AI features (recommendations, itineraries, budget estimates) are fully functional using Google's Gemini AI.",
+      "VoyageAI is currently in demo mode. The packages shown are sample data to demonstrate the platform's features. In a production deployment, packages would be real offerings from verified travel operators. The AI features (recommendations, itineraries, budget estimates) are fully functional using Google's Gemini AI.",
   },
   {
     category: "travel",
-    question: "Does TravelAI support international travel?",
+    question: "Does VoyageAI support international travel?",
     answer:
       "Yes! Our AI can recommend and plan trips to destinations worldwide. The platform supports packages across Asia, Europe, Americas, Africa, and beyond. Use the Explore page to filter by destination, or ask our AI Planner for recommendations based on your preferences.",
   },
   {
     category: "travel",
-    question: "Can I get travel insurance through TravelAI?",
+    question: "Can I get travel insurance through VoyageAI?",
     answer:
       "Travel insurance integration is on our roadmap. Currently, we recommend purchasing travel insurance separately through reputable providers. Our AI can include insurance cost estimates in your budget breakdown when you use the AI Planner.",
   },
@@ -120,17 +120,17 @@ const faqs = [
     category: "privacy",
     question: "Is my personal data safe?",
     answer:
-      "Absolutely. We use AES-256 encryption for data at rest and TLS 1.3 for data in transit. We never sell your personal data to third parties. Your data is used only to improve your experience on TravelAI. Read our full Privacy Policy for details.",
+      "Absolutely. We use AES-256 encryption for data at rest and TLS 1.3 for data in transit. We never sell your personal data to third parties. Your data is used only to improve your experience on VoyageAI. Read our full Privacy Policy for details.",
   },
   {
     category: "privacy",
     question: "How do I delete my account?",
     answer:
-      "Go to User Dashboard → Settings → Danger Zone → Delete Account. This will permanently delete your account and all associated data. This action cannot be undone. If you're having issues, contact privacy@travelai.com.",
+      "Go to User Dashboard → Settings → Danger Zone → Delete Account. This will permanently delete your account and all associated data. This action cannot be undone. If you're having issues, contact privacy@VoyageAI.com.",
   },
   {
     category: "privacy",
-    question: "Does TravelAI use cookies?",
+    question: "Does VoyageAI use cookies?",
     answer:
       "Yes, we use essential cookies to keep you logged in and remember your preferences, and analytics cookies to understand how our platform is used. You can manage cookie preferences through your browser settings. Disabling essential cookies may affect platform functionality.",
   },
@@ -205,7 +205,7 @@ export default function FAQPage() {
               </span>
             </h1>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10">
-              Everything you need to know about TravelAI. Can't find your answer?{" "}
+              Everything you need to know about VoyageAI. Can't find your answer?{" "}
               <Link href="/contact" className="text-brand-400 hover:text-brand-300 transition-colors">
                 Contact us
               </Link>

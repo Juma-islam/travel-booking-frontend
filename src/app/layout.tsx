@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "TravelAI - Smart Travel Booking",
-  description: "AI-Powered Travel Booking Platform for personalized recommendations and itineraries.",
+  title: "VoyageAI - Smart Travel Booking",
+  description: "AI-Powered Travel Booking Platform — personalized recommendations, smart itineraries, and seamless booking.",
 };
 
 export default function RootLayout({

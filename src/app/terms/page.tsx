@@ -7,7 +7,7 @@ import { FileText, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 const sections = [
   {
     title: "1. Acceptance of Terms",
-    content: `By accessing or using TravelAI's website, mobile application, or any of our services, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.
+    content: `By accessing or using VoyageAI's website, mobile application, or any of our services, you agree to be bound by these Terms and Conditions. If you do not agree to these terms, please do not use our services.
 
 These terms apply to all visitors, users, and others who access or use our platform. We reserve the right to update these terms at any time, and your continued use of the platform constitutes acceptance of any changes.`,
   },
@@ -36,7 +36,7 @@ We reserve the right to suspend or terminate accounts that violate these terms.`
   },
   {
     title: "4. Booking & Payments",
-    content: `When you make a booking through TravelAI:
+    content: `When you make a booking through VoyageAI:
 
 • All prices are displayed in USD unless otherwise stated
 • Prices are subject to change until a booking is confirmed
@@ -45,7 +45,7 @@ We reserve the right to suspend or terminate accounts that violate these terms.`
 • Bookings are subject to availability at the time of confirmation
 • We act as an intermediary between you and travel service providers
 
-TravelAI is not responsible for the quality of services provided by third-party travel operators.`,
+VoyageAI is not responsible for the quality of services provided by third-party travel operators.`,
   },
   {
     title: "5. Cancellation & Refunds",
@@ -72,19 +72,19 @@ By using our AI features, you acknowledge these limitations.`,
   },
   {
     title: "7. Intellectual Property",
-    content: `All content on TravelAI, including text, graphics, logos, images, and software, is the property of TravelAI or its content suppliers and is protected by intellectual property laws.
+    content: `All content on VoyageAI, including text, graphics, logos, images, and software, is the property of VoyageAI or its content suppliers and is protected by intellectual property laws.
 
 You may not reproduce, distribute, modify, or create derivative works without our express written permission. User-generated content (reviews, photos) remains your property, but you grant us a license to use it on our platform.`,
   },
   {
     title: "8. Privacy & Data",
-    content: `Your use of TravelAI is also governed by our Privacy Policy, which is incorporated into these Terms by reference. By using our services, you consent to the collection and use of your information as described in our Privacy Policy.
+    content: `Your use of VoyageAI is also governed by our Privacy Policy, which is incorporated into these Terms by reference. By using our services, you consent to the collection and use of your information as described in our Privacy Policy.
 
 We implement industry-standard security measures to protect your data, but cannot guarantee absolute security of information transmitted over the internet.`,
   },
   {
     title: "9. Limitation of Liability",
-    content: `To the maximum extent permitted by law, TravelAI shall not be liable for:
+    content: `To the maximum extent permitted by law, VoyageAI shall not be liable for:
 
 • Indirect, incidental, special, or consequential damages
 • Loss of profits, data, or goodwill
@@ -145,7 +145,7 @@ export default function TermsPage() {
               </span>
             </h1>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              Please read these terms carefully before using TravelAI. Last updated: May 1, 2025.
+              Please read these terms carefully before using VoyageAI. Last updated: May 1, 2025.
             </p>
           </motion.div>
         </div>
@@ -198,8 +198,8 @@ export default function TermsPage() {
               Contact our legal team
             </a>
             {" "}or email{" "}
-            <a href="mailto:legal@travelai.com" className="text-brand-400 hover:text-brand-300 transition-colors">
-              legal@travelai.com
+            <a href="mailto:legal@VoyageAI.com" className="text-brand-400 hover:text-brand-300 transition-colors">
+              legal@VoyageAI.com
             </a>
           </p>
         </div>

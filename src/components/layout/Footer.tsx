@@ -1,7 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { Plane, Mail, Phone, MapPin, ArrowRight, Sparkles } from "lucide-react";
+import { Mail, MapPin, ArrowRight, Sparkles } from "lucide-react";
+
+/* ── VoyageAI Logo ── */
+function VoyageLogo({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="fLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4f46e5" />
+          <stop offset="100%" stopColor="#06b6d4" />
+        </linearGradient>
+        <linearGradient id="fAmberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f59e0b" />
+          <stop offset="100%" stopColor="#fbbf24" />
+        </linearGradient>
+      </defs>
+      <rect width="40" height="40" rx="10" fill="url(#fLogoGrad)" />
+      <circle cx="20" cy="20" r="11" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" />
+      <path d="M28 14L12 19.5L17.5 21.5L19.5 28L25 22L28 14Z" fill="white" opacity="0.95" />
+      <circle cx="28" cy="12" r="3.5" fill="url(#fAmberGrad)" />
+    </svg>
+  );
+}
 
 const quickLinks = [
   { href: "/explore", label: "Explore Destinations" },
@@ -35,11 +57,9 @@ export default function Footer() {
           {/* Brand */}
           <div className="space-y-5 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 group w-fit">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-600/30">
-                <Plane size={18} className="-rotate-45 text-white" />
-              </div>
+              <VoyageLogo size={32} />
               <span className="text-xl font-bold text-white">
-                Travel<span className="text-gradient-primary">AI</span>
+                Voyage<span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-cyan-400">AI</span>
               </span>
             </Link>
             <p className="text-sm leading-relaxed">
@@ -89,9 +109,9 @@ export default function Footer() {
 
             {/* Contact info */}
             <div className="mt-6 space-y-2.5">
-              <a href="mailto:hello@travelai.com" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
+              <a href="mailto:hello@VoyageAI.com" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
                 <Mail size={14} className="text-brand-500 shrink-0" />
-                hello@travelai.com
+                hello@VoyageAI.com
               </a>
               <div className="flex items-center gap-2 text-sm">
                 <MapPin size={14} className="text-cyan-500 shrink-0" />
@@ -126,7 +146,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-slate-800/60 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-600">
-          <p>© {new Date().getFullYear()} TravelAI. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} VoyageAI. All rights reserved.</p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {supportLinks.map((link) => (
               <Link key={link.href} href={link.href} className="hover:text-slate-400 transition-colors">

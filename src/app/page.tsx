@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import HomeSections from "@/components/features/HomeSections";
 
 import { useState, useEffect } from "react";
@@ -31,6 +31,7 @@ import {
   Phone,
   MessageCircle
 } from "lucide-react";
+import FeaturedDestinations from "@/components/ui/FeaturedDestinations";
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -49,7 +50,7 @@ export default function Home() {
         const data = await res.json();
         setDestinations(data.slice(0, 6));
       } catch {
-        // Backend not running â€” silently fail, static content shows
+        // Backend not running — silently fail, static content shows
       } finally {
         setDestinationsLoading(false);
       }
@@ -62,7 +63,7 @@ export default function Home() {
         const data = await res.json();
         setPackages(data.packages ? data.packages.slice(0, 3) : []);
       } catch {
-        // Backend not running â€” silently fail
+        // Backend not running — silently fail
       } finally {
         setPackagesLoading(false);
       }
@@ -361,7 +362,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+{/* <FeaturedDestinations /> */}
       {/* Popular Packages */}
       <section className="py-20 bg-slate-50 dark:bg-slate-800 relative overflow-hidden">
         <div className="container mx-auto px-4 md:px-6 relative z-10">
@@ -520,7 +521,7 @@ export default function Home() {
                 name: "Sarah Johnson",
                 location: "New York, USA",
                 rating: 5,
-                text: "TravelAI completely transformed my travel planning experience. The AI recommendations were spot-on, and I saved both time and money!",
+                text: "VoyageAI completely transformed my travel planning experience. The AI recommendations were spot-on, and I saved both time and money!",
                 avatar: "/api/placeholder/60/60"
               },
               {
@@ -534,7 +535,7 @@ export default function Home() {
                 name: "Emma Rodriguez",
                 location: "Madrid, Spain",
                 rating: 5,
-                text: "As a solo traveler, I felt safe and well-prepared thanks to TravelAI's detailed recommendations and safety information.",
+                text: "As a solo traveler, I felt safe and well-prepared thanks to VoyageAI's detailed recommendations and safety information.",
                 avatar: "/api/placeholder/60/60"
               }
             ].map((testimonial, index) => (
@@ -592,14 +593,14 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: "Adventure", icon: "ðŸ”ï¸", description: "Thrilling outdoor activities" },
-              { name: "Culture", icon: "ðŸ›ï¸", description: "Historical and cultural sites" },
-              { name: "Relaxation", icon: "ðŸ–ï¸", description: "Peaceful beach getaways" },
-              { name: "City Break", icon: "ðŸ™ï¸", description: "Urban exploration" },
-              { name: "Nature", icon: "ðŸŒ²", description: "Natural wonders and wildlife" },
-              { name: "Luxury", icon: "âœ¨", description: "Premium experiences" },
-              { name: "Family", icon: "ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦", description: "Family-friendly destinations" },
-              { name: "Solo", icon: "ðŸ§³", description: "Solo traveler adventures" }
+              { name: "Adventure", icon: "🏔️", description: "Thrilling outdoor activities" },
+              { name: "Culture", icon: "🏛️", description: "Historical and cultural sites" },
+              { name: "Relaxation", icon: "🏖️", description: "Peaceful beach getaways" },
+              { name: "City Break", icon: "🏙️", description: "Urban exploration" },
+              { name: "Nature", icon: "🌲", description: "Natural wonders and wildlife" },
+              { name: "Luxury", icon: "✨", description: "Premium experiences" },
+              { name: "Family", icon: "👨‍👩‍👧‍👦", description: "Family-friendly destinations" },
+              { name: "Solo", icon: "🧳", description: "Solo traveler adventures" }
             ].map((category, index) => (
               <motion.div
                 key={index}
@@ -780,7 +781,7 @@ export default function Home() {
               Ready to Start Your Journey?
             </motion.h2>
             <motion.p variants={fadeInUp} className="text-xl mb-8 text-brand-100">
-              Join thousands of travelers who trust TravelAI for their perfect vacation planning
+              Join thousands of travelers who trust VoyageAI for their perfect vacation planning
             </motion.p>
 
             <motion.div variants={fadeInUp} className="bg-white/10 backdrop-blur-sm p-8 rounded-2xl mb-8">

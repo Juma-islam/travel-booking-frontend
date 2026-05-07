@@ -69,7 +69,7 @@ Despite these measures, no system is 100% secure. We encourage you to use a stro
 • Data portability
 • Withdraw consent at any time
 
-To exercise these rights, contact us at privacy@travelai.com. We will respond within 30 days.`,
+To exercise these rights, contact us at privacy@VoyageAI.com. We will respond within 30 days.`,
   },
   {
     title: "Cookies",
@@ -156,8 +156,8 @@ export default function PrivacyPage() {
 
         <div className="mt-10 text-center text-slate-500 text-sm">
           Questions? Contact us at{" "}
-          <a href="mailto:privacy@travelai.com" className="text-brand-400 hover:text-brand-300">
-            privacy@travelai.com
+          <a href="mailto:privacy@VoyageAI.com" className="text-brand-400 hover:text-brand-300">
+            privacy@VoyageAI.com
           </a>
         </div>
       </div>

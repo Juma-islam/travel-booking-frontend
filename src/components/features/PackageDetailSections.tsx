@@ -207,7 +207,7 @@ export function CancellationPolicy({ policy = "moderate" }: { policy?: "flexible
 // ─── Host Details ─────────────────────────────────────────────────────────────
 export function HostDetails({ pkg }: { pkg: TravelPackage }) {
   const host = pkg.host || {
-    name: "TravelAI Tours",
+    name: "VoyageAI Tours",
     bio: "Professional travel operator with years of experience crafting unforgettable journeys.",
     responseRate: 98,
     totalTours: 150,

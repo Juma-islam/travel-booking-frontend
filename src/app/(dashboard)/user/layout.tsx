@@ -11,7 +11,6 @@ import {
   User,
   Settings,
   LogOut,
-  Plane,
   Bell,
   ChevronRight,
   Menu,
@@ -20,6 +19,7 @@ import {
   Shield,
   History,
 } from "lucide-react";
+import VoyageLogo from "@/components/ui/VoyageLogo";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardNavbar from "@/components/layout/DashboardNavbar";
 
@@ -72,11 +72,9 @@ export default function UserDashboardLayout({
         {/* Logo */}
         <div className="p-6 border-b border-slate-800">
           <Link href="/" className="flex items-center gap-2">
-            <div className="bg-brand-600 p-2 rounded-xl text-white">
-              <Plane size={20} className="-rotate-45" />
-            </div>
+            <VoyageLogo size={32} />
             <span className="text-xl font-bold">
-              Travel<span className="text-brand-500">AI</span>
+              Voyage<span className="text-brand-500">AI</span>
             </span>
           </Link>
         </div>
