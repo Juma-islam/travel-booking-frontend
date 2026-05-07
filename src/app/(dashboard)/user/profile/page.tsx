@@ -1,13 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Mail, Lock, Save, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { User, Mail, Lock, Save, CheckCircle, AlertCircle, Eye, EyeOff, Camera, Loader } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { authApi } from "@/services/api.service";
+import { authApi, uploadApi } from "@/services/api.service";
 
 export default function UserProfilePage() {
   const { user } = useAuth();
+  const [avatar, setAvatar] = useState(user?.avatar || "");
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -18,6 +20,26 @@ export default function UserProfilePage() {
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    try {
+      const { url } = await uploadApi.uploadImage(file, "avatar");
+      setAvatar(url);
+      // Save to profile
+      await authApi.updateProfile({ name: form.name, email: form.email });
+      const stored = localStorage.getItem("auth-user");
+      if (stored) {
+        const u = JSON.parse(stored);
+        localStorage.setItem("auth-user", JSON.stringify({ ...u, avatar: url }));
+      }
+      setSuccess("Avatar updated!");
+      setTimeout(() => setSuccess(""), 2000);
+    } catch { setError("Avatar upload failed"); }
+    finally { setAvatarUploading(false); }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +72,14 @@ export default function UserProfilePage() {
 
       {/* Avatar */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex items-center gap-5">
-        <div className="w-20 h-20 rounded-2xl bg-brand-600 flex items-center justify-center text-white text-3xl font-bold">
-          {user?.name?.charAt(0).toUpperCase()}
+        <div className="relative">
+          <div className="w-20 h-20 rounded-2xl bg-brand-600 flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+            {avatar ? <img src={avatar} alt={user?.name} className="w-full h-full object-cover" /> : user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-brand-600 hover:bg-brand-500 rounded-lg flex items-center justify-center cursor-pointer transition-colors shadow-lg">
+            {avatarUploading ? <Loader size={13} className="text-white animate-spin" /> : <Camera size={13} className="text-white" />}
+            <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" disabled={avatarUploading} />
+          </label>
         </div>
         <div>
           <p className="font-semibold text-white text-lg">{user?.name}</p>
@@ -154,3 +182,4 @@ export default function UserProfilePage() {
     </div>
   );
 }
+

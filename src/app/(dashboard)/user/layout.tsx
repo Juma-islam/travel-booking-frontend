@@ -18,6 +18,7 @@ import {
   Star,
   Activity,
   Shield,
+  History,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardNavbar from "@/components/layout/DashboardNavbar";
@@ -25,9 +26,11 @@ import DashboardNavbar from "@/components/layout/DashboardNavbar";
 const navItems = [
   { href: "/user/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/user/bookings", label: "My Bookings", icon: CalendarCheck },
+  { href: "/user/trip-history", label: "Trip History", icon: History },
   { href: "/user/reviews", label: "My Reviews", icon: Star },
   { href: "/user/wishlist", label: "Wishlist", icon: Heart },
   { href: "/user/notifications", label: "Notifications", icon: Bell },
+  { href: "/user/activity", label: "Activity Log", icon: Activity },
   { href: "/user/profile", label: "Profile", icon: User },
   { href: "/user/settings", label: "Settings", icon: Settings },
 ];

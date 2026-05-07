@@ -18,6 +18,9 @@ import {
   ChevronRight,
   Menu,
   Shield,
+  Star,
+  Activity,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardNavbar from "@/components/layout/DashboardNavbar";
@@ -28,7 +31,12 @@ const navItems = [
   { href: "/admin/packages", label: "Packages", icon: Package },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/destinations", label: "Destinations", icon: MapPin },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/ai-stats", label: "AI Stats", icon: Sparkles },
+  { href: "/admin/notifications", label: "Notifications", icon: Bell },
+  { href: "/admin/logs", label: "System Logs", icon: Activity },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminDashboardLayout({

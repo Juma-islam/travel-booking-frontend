@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import HomeSections from "@/components/features/HomeSections";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -48,7 +49,7 @@ export default function Home() {
         const data = await res.json();
         setDestinations(data.slice(0, 6));
       } catch {
-        // Backend not running — silently fail, static content shows
+        // Backend not running â€” silently fail, static content shows
       } finally {
         setDestinationsLoading(false);
       }
@@ -61,7 +62,7 @@ export default function Home() {
         const data = await res.json();
         setPackages(data.packages ? data.packages.slice(0, 3) : []);
       } catch {
-        // Backend not running — silently fail
+        // Backend not running â€” silently fail
       } finally {
         setPackagesLoading(false);
       }
@@ -591,14 +592,14 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: "Adventure", icon: "🏔️", description: "Thrilling outdoor activities" },
-              { name: "Culture", icon: "🏛️", description: "Historical and cultural sites" },
-              { name: "Relaxation", icon: "🏖️", description: "Peaceful beach getaways" },
-              { name: "City Break", icon: "🏙️", description: "Urban exploration" },
-              { name: "Nature", icon: "🌲", description: "Natural wonders and wildlife" },
-              { name: "Luxury", icon: "✨", description: "Premium experiences" },
-              { name: "Family", icon: "👨‍👩‍👧‍👦", description: "Family-friendly destinations" },
-              { name: "Solo", icon: "🧳", description: "Solo traveler adventures" }
+              { name: "Adventure", icon: "ðŸ”ï¸", description: "Thrilling outdoor activities" },
+              { name: "Culture", icon: "ðŸ›ï¸", description: "Historical and cultural sites" },
+              { name: "Relaxation", icon: "ðŸ–ï¸", description: "Peaceful beach getaways" },
+              { name: "City Break", icon: "ðŸ™ï¸", description: "Urban exploration" },
+              { name: "Nature", icon: "ðŸŒ²", description: "Natural wonders and wildlife" },
+              { name: "Luxury", icon: "âœ¨", description: "Premium experiences" },
+              { name: "Family", icon: "ðŸ‘¨â€ðŸ‘©â€ðŸ‘§â€ðŸ‘¦", description: "Family-friendly destinations" },
+              { name: "Solo", icon: "ðŸ§³", description: "Solo traveler adventures" }
             ].map((category, index) => (
               <motion.div
                 key={index}
@@ -814,6 +815,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      <HomeSections />
     </div>
   );
 }
+
+

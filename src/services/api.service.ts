@@ -71,6 +71,15 @@ export const authApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
+
+  // Wishlist
+  getWishlist: () => request<any[]>("/api/auth/wishlist"),
+  toggleWishlist: (packageId: string) =>
+    request<{ saved: boolean; count: number }>(`/api/auth/wishlist/${packageId}`, { method: "PUT" }),
+  addToWishlist: (packageId: string) =>
+    request<{ saved: boolean; count: number }>(`/api/auth/wishlist/${packageId}`, { method: "POST" }),
+  removeFromWishlist: (packageId: string) =>
+    request<{ saved: boolean; count: number }>(`/api/auth/wishlist/${packageId}`, { method: "DELETE" }),
 };
 
 // ─── Bookings ─────────────────────────────────────────────────────────────────

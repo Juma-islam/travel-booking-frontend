@@ -14,6 +14,14 @@ const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family", "Solo", "L
 const seasons = ["Spring", "Summer", "Fall", "Winter", "Any"];
 const interests = ["History", "Nature", "Food", "Adventure", "Culture", "Shopping", "Nightlife", "Wellness"];
 
+const CURRENCIES = [
+  { code: "USD", symbol: "$", label: "USD — US Dollar", rate: 1 },
+  { code: "BDT", symbol: "৳", label: "BDT — Bangladeshi Taka", rate: 110 },
+  { code: "EUR", symbol: "€", label: "EUR — Euro", rate: 0.92 },
+  { code: "GBP", symbol: "£", label: "GBP — British Pound", rate: 0.79 },
+  { code: "INR", symbol: "₹", label: "INR — Indian Rupee", rate: 83 },
+];
+
 interface PlannerState {
   destination: string;
   budget: string;
@@ -114,6 +122,7 @@ export default function AIPlannerPage() {
   const [results, setResults] = useState<Results>({});
   const [showResults, setShowResults] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [currency, setCurrency] = useState(CURRENCIES[0]);
 
   const [formData, setFormData] = useState<PlannerState>({
     destination: "",
@@ -149,6 +158,16 @@ export default function AIPlannerPage() {
     navigator.clipboard.writeText(text);
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
+  };
+
+  // Convert dollar amounts in text to selected currency
+  const convertCurrency = (text: string): string => {
+    if (currency.rate === 1) return text;
+    return text.replace(/\$\s?([\d,]+(?:\.\d{1,2})?)/g, (_, num) => {
+      const usd = parseFloat(num.replace(/,/g, ""));
+      const converted = Math.round(usd * currency.rate);
+      return `${currency.symbol}${converted.toLocaleString()}`;
+    });
   };
 
   const generatePlan = async () => {
@@ -450,6 +469,29 @@ export default function AIPlannerPage() {
               </div>
             </div>
 
+            {/* Currency Selector */}
+            <div className="flex items-center gap-3 rounded-2xl border border-slate-800 bg-slate-900/50 px-5 py-4">
+              <DollarSign size={16} className="text-amber-400 shrink-0" />
+              <span className="text-sm text-slate-300 font-medium">Display currency:</span>
+              <select
+                value={currency.code}
+                onChange={(e) => {
+                  const found = CURRENCIES.find((c) => c.code === e.target.value);
+                  if (found) setCurrency(found);
+                }}
+                className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:border-brand-500 focus:outline-none transition-colors"
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.label}</option>
+                ))}
+              </select>
+              {currency.rate !== 1 && (
+                <span className="text-xs text-slate-500">
+                  1 USD = {currency.rate} {currency.code}
+                </span>
+              )}
+            </div>
+
             {/* Trip summary pills */}
             <div className="flex flex-wrap gap-2">
               {[
@@ -489,7 +531,7 @@ export default function AIPlannerPage() {
                 </div>
                 <div className="p-6">
                   <article className="prose prose-invert prose-sm sm:prose-base prose-slate max-w-none text-slate-300">
-                    <ReactMarkdown>{content}</ReactMarkdown>
+                    <ReactMarkdown>{key === "budget" ? convertCurrency(content) : content}</ReactMarkdown>
                   </article>
                 </div>
               </motion.div>

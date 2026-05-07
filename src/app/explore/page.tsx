@@ -1,25 +1,27 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, MapPin, Filter, Heart, Star, Sparkles, Globe, Clock,
-  X, GitCompare, Eye, Loader, LayoutGrid, List,
+  X, GitCompare, Eye, Loader, LayoutGrid, List, Wand2,
 } from "lucide-react";
 import { TravelPackage } from "../../types/package";
+import { authApi, isDemoToken } from "../../services/api.service";
+import { useAuth } from "../../contexts/AuthContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const CATEGORIES = ["All", "solo", "family", "couple", "adventure", "relaxation"];
 const SORT_OPTIONS = [
   { value: "recommended", label: "Recommended" },
-  { value: "price-asc", label: "Price: Low → High" },
-  { value: "price-desc", label: "Price: High → Low" },
+  { value: "price-asc", label: "Price: Low â†’ High" },
+  { value: "price-desc", label: "Price: High â†’ Low" },
   { value: "rating", label: "Highest Rated" },
 ];
 const PAGE_SIZE = 9;
 
-// ─── Wishlist helpers ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Wishlist helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getWishlist(): string[] {
   if (typeof window === "undefined") return [];
   try { return JSON.parse(localStorage.getItem("wishlist") || "[]"); } catch { return []; }
@@ -31,7 +33,7 @@ function toggleWishlistItem(id: string): boolean {
   return next.includes(id);
 }
 
-// ─── Grid Card ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Grid Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function GridCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishlist }: {
   pkg: TravelPackage; onQuickView: (p: TravelPackage) => void;
   onCompare: (p: TravelPackage) => void; inCompare: boolean;
@@ -93,7 +95,7 @@ function GridCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishli
   );
 }
 
-// ─── List Card ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ List Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ListCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishlist }: {
   pkg: TravelPackage; onQuickView: (p: TravelPackage) => void;
   onCompare: (p: TravelPackage) => void; inCompare: boolean;
@@ -144,17 +146,17 @@ function ListCard({ pkg, onQuickView, onCompare, inCompare, wishlisted, onWishli
   );
 }
 
-// ─── Compare Modal ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Compare Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompareModal({ packages, onClose }: { packages: TravelPackage[]; onClose: () => void }) {
   const [a, b] = packages;
   const rows = [
-    { label: "Price", aVal: `$${a?.price?.toLocaleString() || "—"}`, bVal: `$${b?.price?.toLocaleString() || "—"}`, lowerIsBetter: true },
-    { label: "Duration", aVal: `${a?.duration?.days || "—"}d / ${a?.duration?.nights || "—"}n`, bVal: `${b?.duration?.days || "—"}d / ${b?.duration?.nights || "—"}n`, lowerIsBetter: false },
-    { label: "Rating", aVal: `${a?.rating?.toFixed(1) || "—"} ⭐`, bVal: `${b?.rating?.toFixed(1) || "—"} ⭐`, lowerIsBetter: false },
+    { label: "Price", aVal: `$${a?.price?.toLocaleString() || "â€”"}`, bVal: `$${b?.price?.toLocaleString() || "â€”"}`, lowerIsBetter: true },
+    { label: "Duration", aVal: `${a?.duration?.days || "â€”"}d / ${a?.duration?.nights || "â€”"}n`, bVal: `${b?.duration?.days || "â€”"}d / ${b?.duration?.nights || "â€”"}n`, lowerIsBetter: false },
+    { label: "Rating", aVal: `${a?.rating?.toFixed(1) || "â€”"} â­`, bVal: `${b?.rating?.toFixed(1) || "â€”"} â­`, lowerIsBetter: false },
     { label: "Reviews", aVal: `${a?.numReviews || 0}`, bVal: `${b?.numReviews || 0}`, lowerIsBetter: false },
-    { label: "Category", aVal: a?.category || "—", bVal: b?.category || "—", lowerIsBetter: false },
-    { label: "Destination", aVal: a?.destination?.name || "—", bVal: b?.destination?.name || "—", lowerIsBetter: false },
-    { label: "Inclusions", aVal: (a?.inclusions || []).slice(0, 3).join(", ") || "—", bVal: (b?.inclusions || []).slice(0, 3).join(", ") || "—", lowerIsBetter: false },
+    { label: "Category", aVal: a?.category || "â€”", bVal: b?.category || "â€”", lowerIsBetter: false },
+    { label: "Destination", aVal: a?.destination?.name || "â€”", bVal: b?.destination?.name || "â€”", lowerIsBetter: false },
+    { label: "Inclusions", aVal: (a?.inclusions || []).slice(0, 3).join(", ") || "â€”", bVal: (b?.inclusions || []).slice(0, 3).join(", ") || "â€”", lowerIsBetter: false },
   ];
 
   return (
@@ -206,7 +208,7 @@ function CompareModal({ packages, onClose }: { packages: TravelPackage[]; onClos
   );
 }
 
-// ─── Quick View Modal ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Quick View Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QuickViewModal({ pkg, onClose }: { pkg: TravelPackage; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
@@ -229,7 +231,7 @@ function QuickViewModal({ pkg, onClose }: { pkg: TravelPackage; onClose: () => v
               {[
                 { label: "Price", value: `$${pkg.price.toLocaleString()}` },
                 { label: "Duration", value: `${pkg.duration?.days}d/${pkg.duration?.nights}n` },
-                { label: "Rating", value: `${pkg.rating?.toFixed(1)} ⭐` },
+                { label: "Rating", value: `${pkg.rating?.toFixed(1)} â­` },
                 { label: "Reviews", value: `${pkg.numReviews || 0}` },
               ].map((item) => (
                 <div key={item.label} className="bg-slate-800 rounded-xl p-3">
@@ -249,7 +251,7 @@ function QuickViewModal({ pkg, onClose }: { pkg: TravelPackage; onClose: () => v
   );
 }
 
-// ─── Compare Bar ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Compare Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CompareBar({ items, onRemove, onCompare, onClear }: {
   items: TravelPackage[]; onRemove: (id: string) => void;
   onCompare: () => void; onClear: () => void;
@@ -281,7 +283,7 @@ function CompareBar({ items, onRemove, onCompare, onClear }: {
   );
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Skeleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function CardSkeleton({ view }: { view: "grid" | "list" }) {
   if (view === "list") {
     return (
@@ -316,7 +318,7 @@ function CardSkeleton({ view }: { view: "grid" | "list" }) {
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ExplorePage() {
   const [allPackages, setAllPackages] = useState<TravelPackage[]>([]);
   const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
@@ -338,6 +340,8 @@ export default function ExplorePage() {
   const [compareList, setCompareList] = useState<TravelPackage[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [quickViewPkg, setQuickViewPkg] = useState<TravelPackage | null>(null);
+  const [aiSearching, setAiSearching] = useState(false);
+  const [aiToast, setAiToast] = useState("");
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -375,7 +379,7 @@ export default function ExplorePage() {
   const displayed = filtered.slice(0, displayedCount);
   const hasMore = displayedCount < filtered.length;
 
-  // Infinite scroll — use ref to avoid stale closure loop
+  // Infinite scroll â€” use ref to avoid stale closure loop
   const hasMoreRef = useRef(hasMore);
   const loadingMoreRef = useRef(loadingMore);
   hasMoreRef.current = hasMore;
@@ -398,7 +402,7 @@ export default function ExplorePage() {
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []); // empty deps — refs handle freshness
+  }, []); // empty deps â€” refs handle freshness
 
   // Reset count when filters change
   useEffect(() => { setDisplayedCount(PAGE_SIZE); }, [search, category, maxPrice, minRating, sort]);
@@ -418,11 +422,57 @@ export default function ExplorePage() {
     });
   };
 
+  // AI Smart Search
+  const handleAiSearch = async () => {
+    if (!search.trim()) {
+      setAiToast("Type something to search first!");
+      setTimeout(() => setAiToast(""), 3000);
+      return;
+    }
+    setAiSearching(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/ai/chatbot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: search,
+          context: `Extract destination, category, and price range from this search query and return JSON only (no markdown, no explanation): {"destination": "string or empty", "category": "solo|family|couple|adventure|relaxation or empty", "maxPrice": number or 10000}`,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const raw: string = data.reply || data.result || "";
+        // Strip markdown code fences if present
+        const cleaned = raw.replace(/```json|```/g, "").trim();
+        try {
+          const parsed = JSON.parse(cleaned);
+          if (parsed.destination) setSearch(parsed.destination);
+          if (parsed.category && CATEGORIES.map((c) => c.toLowerCase()).includes(parsed.category.toLowerCase())) {
+            setCategory(parsed.category);
+          }
+          if (parsed.maxPrice && typeof parsed.maxPrice === "number") {
+            setMaxPrice(Math.min(10000, Math.max(500, parsed.maxPrice)));
+          }
+          setAiToast("AI filters applied!");
+        } catch {
+          setAiToast("AI search applied — showing results for: " + search);
+        }
+      } else {
+        setAiToast("AI search unavailable — using text search");
+      }
+    } catch {
+      setAiToast("AI search unavailable — using text search");
+    } finally {
+      setAiSearching(false);
+      setTimeout(() => setAiToast(""), 3000);
+    }
+  };
+
   const activeFilters = [
     search && `"${search}"`,
     category !== "All" && category,
-    maxPrice < 10000 && `≤$${maxPrice}`,
-    minRating > 0 && `${minRating}★+`,
+    maxPrice < 10000 && `â‰¤$${maxPrice}`,
+    minRating > 0 && `${minRating}â˜…+`,
   ].filter(Boolean);
 
   return (
@@ -461,6 +511,19 @@ export default function ExplorePage() {
               className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder-slate-500 focus:border-brand-500 focus:outline-none transition-colors" />
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={handleAiSearch}
+              disabled={aiSearching}
+              title="AI Smart Search — let AI extract filters from your query"
+              className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border border-brand-500/40 bg-brand-600/10 text-brand-300 hover:bg-brand-600/20 hover:border-brand-500/60 transition-colors disabled:opacity-50"
+            >
+              {aiSearching ? (
+                <Loader size={16} className="animate-spin" />
+              ) : (
+                <Wand2 size={16} />
+              )}
+              <span className="hidden sm:inline">AI Search</span>
+            </button>
             <button onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border transition-colors ${showFilters ? "border-brand-500 bg-brand-600/20 text-brand-300" : "border-slate-700 bg-slate-900 text-slate-400 hover:text-white"}`}>
               <Filter size={16} />
@@ -507,7 +570,7 @@ export default function ExplorePage() {
                     {[0, 3, 3.5, 4, 4.5].map((r) => (
                       <button key={r} onClick={() => setMinRating(r)}
                         className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-colors ${minRating === r ? "bg-amber-500 text-white" : "bg-slate-800 text-slate-400 hover:text-white"}`}>
-                        {r === 0 ? "Any" : `${r}★+`}
+                        {r === 0 ? "Any" : `${r}â˜…+`}
                       </button>
                     ))}
                   </div>
@@ -553,7 +616,7 @@ export default function ExplorePage() {
         <div className="flex items-center justify-between">
           <p className="text-slate-400 text-sm">
             {loading ? "Loading..." : `${filtered.length} package${filtered.length !== 1 ? "s" : ""} found`}
-            {displayed.length < filtered.length && ` · showing ${displayed.length}`}
+            {displayed.length < filtered.length && ` Â· showing ${displayed.length}`}
           </p>
           {compareList.length > 0 && (
             <span className="text-xs text-brand-400 flex items-center gap-1.5">
@@ -616,7 +679,7 @@ export default function ExplorePage() {
         {/* End of results */}
         {!loading && !loadingMore && !hasMore && displayed.length > 0 && (
           <div className="text-center py-8 text-slate-600 text-sm">
-            ✓ All {filtered.length} packages loaded
+            âœ“ All {filtered.length} packages loaded
           </div>
         )}
       </div>
@@ -634,6 +697,23 @@ export default function ExplorePage() {
             onCompare={() => setShowCompare(true)} onClear={() => setCompareList([])} />
         )}
       </AnimatePresence>
+
+      {/* AI Search Toast */}
+      <AnimatePresence>
+        {aiToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-800 border border-brand-500/40 text-white px-5 py-3 rounded-xl shadow-xl text-sm"
+          >
+            <Sparkles size={15} className="text-brand-400" />
+            {aiToast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+
