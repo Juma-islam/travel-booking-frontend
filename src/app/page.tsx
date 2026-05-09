@@ -31,7 +31,7 @@ import {
   Phone,
   MessageCircle
 } from "lucide-react";
-import FeaturedDestinations from "@/components/ui/FeaturedDestinations";
+
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);

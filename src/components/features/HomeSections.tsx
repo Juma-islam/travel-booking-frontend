@@ -2,6 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, type Variants } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 import {
   Search,
   Sparkles,
@@ -703,22 +708,22 @@ export function VideoHeroCTA() {
 // --- 8. PopularDestinations ----------------------------------------------------
 
 const destinations = [
-  { name: "Santorini", country: "Greece", rating: 4.9, price: "$1,299", tag: "Romantic", img: "/api/placeholder/400/300" },
-  { name: "Kyoto", country: "Japan", rating: 4.8, price: "$1,099", tag: "Cultural", img: "/api/placeholder/400/300" },
-  { name: "Bali", country: "Indonesia", rating: 4.9, price: "$899", tag: "Tropical", img: "/api/placeholder/400/300" },
-  { name: "Machu Picchu", country: "Peru", rating: 4.7, price: "$1,499", tag: "Adventure", img: "/api/placeholder/400/300" },
-  { name: "Amalfi Coast", country: "Italy", rating: 4.8, price: "$1,399", tag: "Scenic", img: "/api/placeholder/400/300" },
-  { name: "Maldives", country: "Indian Ocean", rating: 5.0, price: "$2,199", tag: "Luxury", img: "/api/placeholder/400/300" },
+  { name: "Santorini", country: "Greece", rating: 4.9, price: "$1,299", tag: "Romantic", img: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&q=80" },
+  { name: "Kyoto", country: "Japan", rating: 4.8, price: "$1,099", tag: "Cultural", img: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=600&q=80" },
+  { name: "Bali", country: "Indonesia", rating: 4.9, price: "$899", tag: "Tropical", img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80" },
+  { name: "Machu Picchu", country: "Peru", rating: 4.7, price: "$1,499", tag: "Adventure", img: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=600&q=80" },
+  { name: "Amalfi Coast", country: "Italy", rating: 4.8, price: "$1,399", tag: "Scenic", img: "https://images.unsplash.com/photo-1533606688076-b6683a5f59f1?w=600&q=80" },
+  { name: "Maldives", country: "Indian Ocean", rating: 5.0, price: "$2,199", tag: "Luxury", img: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=600&q=80" },
+  { name: "Dubai", country: "UAE", rating: 4.8, price: "$1,599", tag: "Modern", img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80" },
+  { name: "Paris", country: "France", rating: 4.9, price: "$1,249", tag: "Romantic", img: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80" },
 ];
 
 export function PopularDestinations() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   return (
     <section className="bg-slate-950 py-24 px-4 overflow-hidden">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <motion.div
-          className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4"
+          className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
@@ -734,68 +739,97 @@ export function PopularDestinations() {
             </h2>
           </div>
           <Link
-            href="/destinations"
+            href="/packages"
             className="flex items-center gap-2 text-brand-400 hover:text-brand-300 font-semibold transition-colors group"
           >
-            View all destinations
+            View all packages
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
 
-        {/* Horizontal scroll */}
-        <div
-          ref={scrollRef}
-          className="flex gap-5 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700 snap-x snap-mandatory"
-          style={{ scrollbarWidth: "thin" }}
-        >
-          {destinations.map((d, i) => (
-            <motion.div
-              key={d.name}
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={fadeIn}
-              whileHover={{ y: -6 }}
-              className="flex-shrink-0 w-72 rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-slate-600 transition-all duration-300 group cursor-pointer snap-start"
-            >
-              {/* Image */}
-              <div className="relative h-48 overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={d.img}
-                  alt={d.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 to-transparent" />
-                <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-600/90 text-white text-xs font-semibold backdrop-blur-sm">
-                  {d.tag}
-                </span>
-                <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
-                  <Star size={11} className="text-amber-400 fill-amber-400" />
-                  <span className="text-white text-xs font-bold">{d.rating}</span>
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-1">
-                  <h3 className="text-white font-bold text-lg">{d.name}</h3>
-                  <span className="text-brand-400 font-black text-lg">{d.price}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-500 text-sm mb-4">
-                  <MapPin size={13} />
-                  {d.country}
-                </div>
-                <Link
-                  href="/packages"
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-brand-600 text-slate-300 hover:text-white text-sm font-semibold transition-all duration-300 border border-slate-700 hover:border-brand-600"
+        {/* Swiper Carousel */}
+        <div className="relative">
+          <Swiper
+            modules={[Navigation, Autoplay, Pagination]}
+            slidesPerView={1}
+            spaceBetween={20}
+            loop={true}
+            autoplay={{ delay: 3500, disableOnInteraction: false, pauseOnMouseEnter: true }}
+            navigation={{
+              nextEl: ".dest-next",
+              prevEl: ".dest-prev",
+            }}
+            pagination={{ clickable: true, el: ".dest-pagination" }}
+            breakpoints={{
+              640: { slidesPerView: 2 },
+              1024: { slidesPerView: 3 },
+              1280: { slidesPerView: 4 },
+            }}
+            className="!pb-14"
+          >
+            {destinations.map((d, i) => (
+              <SwiperSlide key={d.name}>
+                <motion.div
+                  custom={i}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.1 }}
+                  variants={fadeIn}
+                  className="group rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 hover:border-brand-600/50 transition-all duration-300 cursor-pointer h-full"
                 >
-                  Explore Package <ArrowRight size={14} />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+                  {/* Image */}
+                  <div className="relative h-52 overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={d.img}
+                      alt={d.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                    {/* Tag */}
+                    <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-brand-600/90 text-white text-xs font-semibold backdrop-blur-sm">
+                      {d.tag}
+                    </span>
+                    {/* Rating */}
+                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-slate-900/80 backdrop-blur-sm px-2.5 py-1 rounded-full">
+                      <Star size={11} className="text-amber-400 fill-amber-400" />
+                      <span className="text-white text-xs font-bold">{d.rating}</span>
+                    </div>
+                    {/* Country overlay */}
+                    <div className="absolute bottom-3 left-4 flex items-center gap-1.5">
+                      <MapPin size={13} className="text-brand-400" />
+                      <span className="text-slate-300 text-sm font-medium">{d.country}</span>
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-white font-bold text-lg">{d.name}</h3>
+                      <span className="text-brand-400 font-black text-lg">{d.price}</span>
+                    </div>
+                    <Link
+                      href="/packages"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-brand-600 text-slate-300 hover:text-white text-sm font-semibold transition-all duration-300 border border-slate-700 hover:border-brand-600"
+                    >
+                      Explore Package <ArrowRight size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {/* Custom nav buttons */}
+          <button className="dest-prev absolute left-0 top-1/2 -translate-y-8 -translate-x-4 z-10 w-11 h-11 rounded-full bg-slate-800 border border-slate-700 text-white flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition-all shadow-lg">
+            <ArrowRight size={18} className="rotate-180" />
+          </button>
+          <button className="dest-next absolute right-0 top-1/2 -translate-y-8 translate-x-4 z-10 w-11 h-11 rounded-full bg-slate-800 border border-slate-700 text-white flex items-center justify-center hover:bg-brand-600 hover:border-brand-600 transition-all shadow-lg">
+            <ArrowRight size={18} />
+          </button>
+
+          {/* Pagination dots */}
+          <div className="dest-pagination flex justify-center gap-2 mt-2" />
         </div>
       </div>
     </section>
