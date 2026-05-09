@@ -147,11 +147,6 @@ export const bookingApi = {
     if (isDemoToken(token)) return Promise.resolve(DEMO_BOOKINGS);
     return request<Booking[]>("/api/bookings");
   },
-
-  createCheckoutSession: (bookingId: string) =>
-    request<{ url: string; sessionId: string }>(`/api/bookings/${bookingId}/checkout`, {
-      method: "POST",
-    }),
 };
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
