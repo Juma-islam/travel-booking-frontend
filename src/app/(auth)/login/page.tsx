@@ -28,9 +28,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [googleToast, setGoogleToast] = useState(false);
 
-  const { login, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -244,9 +243,12 @@ export default function LoginPage() {
             {/* Google OAuth Button */}
             <button
               type="button"
-              onClick={() => {
-                setGoogleToast(true);
-                setTimeout(() => setGoogleToast(false), 3000);
+              onClick={async () => {
+                try {
+                  await loginWithGoogle();
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Google login failed");
+                }
               }}
               className="w-full flex items-center justify-center gap-3 py-3 px-6 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 shadow-sm"
             >
@@ -324,19 +326,6 @@ export default function LoginPage() {
             </p>
           </div>
         </motion.div>
-
-        {/* Google OAuth Toast */}
-        {googleToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl text-sm"
-          >
-            <span>🔐</span>
-            Google OAuth coming soon — use email login
-          </motion.div>
-        )}
 
         {/* Footer */}
         <div className="text-center mt-8">
