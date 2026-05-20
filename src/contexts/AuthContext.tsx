@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
           
           // Prefer the real Firebase email, then provider data email, then fallback to a generated placeholder
-          const providerEmail = firebaseUser.providerData?.[0]?.email;
-          const providerName = firebaseUser.providerData?.[0]?.displayName;
+          const providerEmail = firebaseUser.providerData?.find(p => p.email)?.email;
+          const providerName = firebaseUser.providerData?.find(p => p.displayName)?.displayName;
           const userEmail = firebaseUser.email || providerEmail || `firebase-${firebaseUser.uid.substring(0, 12)}@travel-ai.local`;
           const userName = firebaseUser.displayName || providerName || userEmail.split('@')[0];
           
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 createdAt: new Date(),
               };
 
-              localStorage.setItem('auth-token', token);
+              localStorage.setItem('auth-token', backendUser.token || token);
               localStorage.setItem('auth-user', JSON.stringify(user));
 
               setAuthState({
