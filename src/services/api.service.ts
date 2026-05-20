@@ -245,7 +245,11 @@ export const uploadApi = {
       body: formData,
     });
 
-    if (!res.ok) throw new Error("Upload failed");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: res.statusText }));
+      console.error("uploadMultiple error:", err);
+      throw new Error(err.message || "Upload failed");
+    }
     return res.json();
   },
 
