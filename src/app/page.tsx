@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -18,6 +19,11 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchDates, setSearchDates] = useState("");
+  const [searchGuests, setSearchGuests] = useState("");
+
   const [destinations, setDestinations] = useState<any[]>([]);
   const [destinationsLoading, setDestinationsLoading] = useState(true);
   const [packages, setPackages] = useState<any[]>([]);
@@ -56,7 +62,7 @@ export default function Home() {
     fetchPackages();
   }, []);
 
-  const fadeUp = {
+  const fadeUp: any = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
   };
@@ -97,7 +103,13 @@ export default function Home() {
               <MapPin className="text-brand-500 mr-3 group-hover:scale-110 transition-transform" size={22} />
               <div className="flex flex-col text-left w-full">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Location</span>
-                <input type="text" placeholder="Where are you going?" className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" />
+                <input 
+                  type="text" 
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  placeholder="Where are you going?" 
+                  className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" 
+                />
               </div>
             </div>
             
@@ -107,7 +119,13 @@ export default function Home() {
               <Calendar className="text-brand-500 mr-3 group-hover:scale-110 transition-transform" size={22} />
               <div className="flex flex-col text-left w-full">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Dates</span>
-                <input type="text" placeholder="Add dates" className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" />
+                <input 
+                  type="text" 
+                  value={searchDates}
+                  onChange={(e) => setSearchDates(e.target.value)}
+                  placeholder="Add dates" 
+                  className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" 
+                />
               </div>
             </div>
 
@@ -117,14 +135,27 @@ export default function Home() {
               <Users className="text-brand-500 mr-3 group-hover:scale-110 transition-transform" size={22} />
               <div className="flex flex-col text-left w-full">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Guests</span>
-                <input type="text" placeholder="Add guests" className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" />
+                <input 
+                  type="text" 
+                  value={searchGuests}
+                  onChange={(e) => setSearchGuests(e.target.value)}
+                  placeholder="Add guests" 
+                  className="bg-transparent border-none outline-none text-slate-900 dark:text-white font-bold text-sm md:text-base w-full placeholder-slate-400" 
+                />
               </div>
             </div>
 
-            <Link href="/explore" className="w-full md:w-auto bg-brand-600 hover:bg-brand-500 text-white px-10 py-5 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/40 hover:shadow-brand-500/60">
+            <button 
+              onClick={() => {
+                const query = new URLSearchParams();
+                if (searchLocation) query.set("search", searchLocation);
+                router.push(`/explore?${query.toString()}`);
+              }} 
+              className="w-full md:w-auto bg-brand-600 hover:bg-brand-500 text-white px-10 py-5 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/40 hover:shadow-brand-500/60 cursor-pointer"
+            >
               <Search size={20} />
               <span>Search</span>
-            </Link>
+            </button>
           </motion.div>
         </div>
       </section>

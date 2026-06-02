@@ -3,45 +3,20 @@ import { authApi } from "./api.service";
 
 class AuthService {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      const data = await authApi.login(credentials.email, credentials.password);
-
-      const user: User = {
-        id: data._id,
-        email: data.email,
-        name: data.name,
-        role: data.role,
-        createdAt: new Date(),
-      };
-
-      localStorage.setItem("auth-token", data.token);
-      localStorage.setItem("auth-user", JSON.stringify(user));
-
-      return { user, token: data.token };
-    } catch (err) {
-      // Fallback to demo users if backend is unreachable
-      return this._demoLogin(credentials);
-    }
-  }
-
-  private async _demoLogin(credentials: LoginCredentials): Promise<AuthResponse> {
-    await new Promise((r) => setTimeout(r, 800));
-    const demo = DEMO_USERS.find(
-      (u) => u.email === credentials.email && u.password === credentials.password
-    );
-    if (!demo) throw new Error("Invalid email or password");
+    const data = await authApi.login(credentials.email, credentials.password);
 
     const user: User = {
-      id: demo.id,
-      email: demo.email,
-      name: demo.name,
-      role: demo.role as "user" | "admin",
-      createdAt: new Date(demo.createdAt),
+      id: data._id,
+      email: data.email,
+      name: data.name,
+      role: data.role,
+      createdAt: new Date(),
     };
-    const token = `demo-token-${demo.id}`;
-    localStorage.setItem("auth-token", token);
+
+    localStorage.setItem("auth-token", data.token);
     localStorage.setItem("auth-user", JSON.stringify(user));
-    return { user, token };
+
+    return { user, token: data.token };
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
@@ -91,34 +66,9 @@ class AuthService {
     return !!this.getToken() && !!this.getCurrentUser();
   }
 
-  getDemoCredentials() {
-    return DEMO_USERS.map((u) => ({
-      email: u.email,
-      password: u.password,
-      name: u.name,
-      role: u.role,
-    }));
-  }
+
 }
 
-// Demo users for offline/demo mode
-const DEMO_USERS = [
-  {
-    id: "demo-1",
-    email: "admin@travelai.com",
-    password: "admin123",
-    name: "Admin User",
-    role: "admin",
-    createdAt: "2024-01-01",
-  },
-  {
-    id: "demo-2",
-    email: "demo@travelai.com",
-    password: "demo123",
-    name: "Demo User",
-    role: "user",
-    createdAt: "2024-01-01",
-  },
-];
+
 
 export const authService = new AuthService();

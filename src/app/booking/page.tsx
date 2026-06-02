@@ -66,12 +66,7 @@ export default function BookingPage() {
     e.preventDefault();
     if (!isAuthenticated) { router.push("/login"); return; }
 
-    // Demo token check — redirect to register for real account
-    const token = localStorage.getItem("auth-token");
-    if (token?.startsWith("demo-token-")) {
-      setError("Demo account cannot make real bookings. Please register a real account to book.");
-      return;
-    }
+
 
     if (!form.endDate) { setError("Please select an end date."); return; }
     if (form.endDate <= form.startDate) { setError("End date must be after start date."); return; }
@@ -235,27 +230,7 @@ export default function BookingPage() {
                     )}
                   </button>
 
-                  {/* Mock Payment */}
-                  <button
-                    type="button"
-                    onClick={() => setForm((p) => ({ ...p, paymentMethod: "MockPayment" }))}
-                    className={`flex items-center gap-4 px-4 py-4 rounded-xl text-sm font-medium border transition-all ${
-                      form.paymentMethod === "MockPayment"
-                        ? "border-amber-500 bg-amber-600/10 text-white"
-                        : "border-slate-700 bg-slate-800 text-slate-400 hover:text-white hover:border-slate-600"
-                    }`}
-                  >
-                    <div className="w-10 h-7 bg-amber-500/20 rounded-md flex items-center justify-center shrink-0">
-                      <span className="text-amber-400 text-xs font-bold">M</span>
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold">Mock Payment</p>
-                      <p className="text-xs text-slate-500">Demo mode — no real charge</p>
-                    </div>
-                    {form.paymentMethod === "MockPayment" && (
-                      <CheckCircle size={16} className="text-amber-400 ml-auto" />
-                    )}
-                  </button>
+
                 </div>
 
                 {form.paymentMethod === "Stripe" && (
@@ -271,18 +246,6 @@ export default function BookingPage() {
                   <div className="flex items-center gap-2">
                     <AlertCircle size={16} /> {error}
                   </div>
-                  {error.includes("Demo account") && (
-                    <div className="flex gap-2 mt-1">
-                      <Link href="/register"
-                        className="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors">
-                        Create Real Account
-                      </Link>
-                      <Link href="/login"
-                        className="px-3 py-1.5 border border-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors">
-                        Login
-                      </Link>
-                    </div>
-                  )}
                 </div>
               )}
               {success && (

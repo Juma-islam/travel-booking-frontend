@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bell, Settings, LogOut, Sun, Moon, User, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import VoyageLogo from "@/components/ui/VoyageLogo";
+import { notificationApi } from "@/services/api.service";
 
 interface DashboardNavbarProps {
   onMenuClick?: () => void;
@@ -15,6 +16,22 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchUnreadCount = async () => {
+      try {
+        const { count } = await notificationApi.getUnreadCount();
+        setUnreadCount(count);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -54,7 +71,12 @@ export default function DashboardNavbar({ onMenuClick }: DashboardNavbarProps) {
             aria-label="Notifications"
           >
             <Bell size={20} className="text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+            )}
           </Link>
 
           {/* Theme toggle */}

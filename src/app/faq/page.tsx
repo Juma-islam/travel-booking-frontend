@@ -60,7 +60,7 @@ const faqs = [
     category: "booking",
     question: "What payment methods are accepted?",
     answer:
-      "We currently support mock payment for demo purposes. In production, we accept major credit/debit cards (Visa, Mastercard, Amex), PayPal, and bank transfers. All payments are processed securely through our payment partners with 256-bit SSL encryption.",
+      "We accept secure payments through Stripe, supporting major credit/debit cards (Visa, Mastercard, Amex, Discover). All transactions are fully encrypted with 256-bit SSL encryption for your security.",
   },
   {
     category: "booking",
@@ -84,13 +84,13 @@ const faqs = [
     category: "account",
     question: "How do I create an account?",
     answer:
-      "Click 'Sign In' in the top navigation, then 'Sign up here'. Fill in your name, email, and a strong password. You can also use the demo account (demo@VoyageAI.com / demo123) to explore the platform without registering.",
+      "Click 'Sign In' in the top navigation, then 'Sign up here'. Fill in your name, email, and a strong password. You can also sign in using the pre-seeded admin account to preview high-privilege settings.",
   },
   {
     category: "account",
     question: "I forgot my password. What do I do?",
     answer:
-      "On the login page, click 'Forgot Password' (coming soon). Enter your registered email and we'll send you a password reset link. The link expires after 1 hour for security. If you don't receive the email, check your spam folder or contact support.",
+      "On the login page, click 'Forgot Password'. Enter your registered email and we'll send you a password reset link. The link expires after 1 hour for security. If you don't receive the email, check your spam folder or contact support.",
   },
   {
     category: "account",
@@ -102,7 +102,7 @@ const faqs = [
     category: "travel",
     question: "Are the travel packages real?",
     answer:
-      "VoyageAI is currently in demo mode. The packages shown are sample data to demonstrate the platform's features. In a production deployment, packages would be real offerings from verified travel operators. The AI features (recommendations, itineraries, budget estimates) are fully functional using Google's Gemini AI.",
+      "All packages listed on VoyageAI are curated travel offerings with complete details on inclusions, itineraries, and tour operators. Booking options, reviews, and 24/7 AI-driven personalization are fully integrated and live.",
   },
   {
     category: "travel",

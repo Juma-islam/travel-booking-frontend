@@ -2,10 +2,6 @@
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-export function isDemoToken(token: string | null): boolean {
-  return !!token && token.startsWith("demo-token-");
-}
-
 function getAuthHeader(): Record<string, string> {
   if (typeof window === "undefined") return {};
   const token = localStorage.getItem("auth-token");
@@ -125,15 +121,10 @@ export const bookingApi = {
     }),
 
   getMyBookings: (): Promise<Booking[]> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
-    if (isDemoToken(token)) return Promise.resolve(DEMO_BOOKINGS);
     return request<Booking[]>("/api/bookings/mybookings");
   },
 
   getById: (id: string) => request<Booking>(`/api/bookings/${id}`),
-
-  pay: (id: string) =>
-    request<Booking>(`/api/bookings/${id}/pay`, { method: "PUT" }),
 
   updateStatus: (id: string, status: string) =>
     request<Booking>(`/api/bookings/${id}/status`, {
@@ -143,8 +134,6 @@ export const bookingApi = {
 
   // Admin
   getAll: (): Promise<Booking[]> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
-    if (isDemoToken(token)) return Promise.resolve(DEMO_BOOKINGS);
     return request<Booking[]>("/api/bookings");
   },
 };
@@ -163,13 +152,9 @@ export interface AdminStats {
 
 export const adminApi = {
   getStats: (): Promise<AdminStats> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
-    if (isDemoToken(token)) return Promise.resolve(DEMO_STATS);
     return request<AdminStats>("/api/admin/stats");
   },
   getUsers: (): Promise<BackendUser[]> => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("auth-token") : null;
-    if (isDemoToken(token)) return Promise.resolve(DEMO_USERS_LIST);
     return request<BackendUser[]>("/api/admin/users");
   },
   deleteUser: (id: string) =>
@@ -211,6 +196,18 @@ export const packageApi = {
     request<any>(`/api/packages/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   delete: (id: string) =>
     request<{ message: string }>(`/api/packages/${id}`, { method: "DELETE" }),
+};
+
+// ─── Reviews ──────────────────────────────────────────────────────────────────
+
+export const reviewApi = {
+  getMyReviews: () => request<any[]>("/api/reviews/mine"),
+  createReview: (data: { packageId: string; rating: number; comment: string }) =>
+    request<any>("/api/reviews", { method: "POST", body: JSON.stringify(data) }),
+  updateReview: (id: string, data: { rating: number; comment: string }) =>
+    request<any>(`/api/reviews/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  deleteReview: (id: string) =>
+    request<{ message: string }>(`/api/reviews/${id}`, { method: "DELETE" }),
 };
 
 // ─── Upload ───────────────────────────────────────────────────────────────────
@@ -268,69 +265,23 @@ export const destinationApi = {
     request<{ message: string }>(`/api/destinations/${id}`, { method: "DELETE" }),
 };
 
-// ─── Demo fallback data (used when demo-token is active) ──────────────────────
+// ─── Notifications ────────────────────────────────────────────────────────────
 
-const DEMO_BOOKINGS: Booking[] = [
-  {
-    _id: "demo-booking-1",
-    user: { _id: "demo-1", name: "Admin User", email: "admin@travelai.com" },
-    packageItem: {
-      _id: "demo-pkg-1",
-      title: "European Adventure",
-      images: ["/api/placeholder/400/200"],
-      destination: { name: "Paris, France" },
-    },
-    startDate: "2025-06-10",
-    endDate: "2025-06-20",
-    guests: 2,
-    totalPrice: 2499,
-    discount: 0,
-    paymentMethod: "MockPayment",
-    isPaid: true,
-    status: "confirmed",
-    createdAt: "2025-05-01",
-  },
-  {
-    _id: "demo-booking-2",
-    user: { _id: "demo-1", name: "Admin User", email: "admin@travelai.com" },
-    packageItem: {
-      _id: "demo-pkg-2",
-      title: "Bali Paradise",
-      images: ["/api/placeholder/400/200"],
-      destination: { name: "Bali, Indonesia" },
-    },
-    startDate: "2025-08-01",
-    endDate: "2025-08-08",
-    guests: 1,
-    totalPrice: 899,
-    discount: 179.8,
-    paymentMethod: "MockPayment",
-    isPaid: false,
-    status: "pending",
-    createdAt: "2025-05-10",
-  },
-];
+export interface BackendNotification {
+  _id: string;
+  type: "booking" | "ai" | "promo" | "system" | "alert";
+  title: string;
+  message: string;
+  read: boolean;
+  link?: string;
+  createdAt: string;
+}
 
-const DEMO_STATS: AdminStats = {
-  totalUsers: 3,
-  totalPackages: 12,
-  totalBookings: 8,
-  totalRevenue: 15420,
-  recentBookings: DEMO_BOOKINGS,
-  monthlyRevenue: [
-    { _id: { year: 2025, month: 3 }, revenue: 2400, count: 2 },
-    { _id: { year: 2025, month: 4 }, revenue: 5200, count: 4 },
-    { _id: { year: 2025, month: 5 }, revenue: 7820, count: 6 },
-  ],
-  statusBreakdown: [
-    { _id: "confirmed", count: 4 },
-    { _id: "pending", count: 2 },
-    { _id: "completed", count: 1 },
-    { _id: "cancelled", count: 1 },
-  ],
+export const notificationApi = {
+  getMyNotifications: () => request<BackendNotification[]>("/api/notifications"),
+  getUnreadCount: () => request<{ count: number }>("/api/notifications/unread-count"),
+  markAsRead: (id: string) => request<BackendNotification>(`/api/notifications/${id}/read`, { method: "PUT" }),
+  markAllAsRead: () => request<{ message: string }>("/api/notifications/read-all", { method: "PUT" }),
+  deleteNotification: (id: string) => request<{ message: string }>(`/api/notifications/${id}`, { method: "DELETE" }),
+  deleteAllNotifications: () => request<{ message: string }>("/api/notifications", { method: "DELETE" }),
 };
-
-const DEMO_USERS_LIST: BackendUser[] = [
-  { _id: "demo-1", name: "Admin User", email: "admin@travelai.com", role: "admin", createdAt: "2024-01-01" },
-  { _id: "demo-2", name: "Demo User", email: "demo@travelai.com", role: "user", createdAt: "2024-01-01" },
-];

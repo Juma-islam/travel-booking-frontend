@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { reviewApi, packageApi } from "../../../../services/api.service";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,38 +27,7 @@ interface Review {
   status: "published" | "pending" | "rejected";
 }
 
-const MOCK_REVIEWS: Review[] = [
-  {
-    id: "r1",
-    packageTitle: "European Adventure",
-    packageImage: "/api/placeholder/80/80",
-    packageId: "pkg-1",
-    rating: 5,
-    comment: "Absolutely incredible experience! The guides were knowledgeable, hotels were top-notch, and the itinerary was perfectly planned. Would 100% recommend to anyone looking for a premium European tour.",
-    date: "May 10, 2025",
-    status: "published",
-  },
-  {
-    id: "r2",
-    packageTitle: "Bali Paradise",
-    packageImage: "/api/placeholder/80/80",
-    packageId: "pkg-2",
-    rating: 4,
-    comment: "Beautiful destination and great value for money. The beach resorts were stunning. Only minor issue was some delays on day 3, but overall a fantastic trip.",
-    date: "April 22, 2025",
-    status: "published",
-  },
-  {
-    id: "r3",
-    packageTitle: "Tokyo Discovery",
-    packageImage: "/api/placeholder/80/80",
-    packageId: "pkg-3",
-    rating: 5,
-    comment: "Tokyo exceeded all my expectations. The cultural experiences were immersive and the food recommendations were spot on!",
-    date: "March 15, 2025",
-    status: "pending",
-  },
-];
+
 
 const statusConfig = {
   published: { label: "Published", color: "text-green-400 bg-green-500/10 border-green-500/20" },
@@ -93,7 +63,10 @@ function StarRating({ value, onChange }: { value: number; onChange?: (v: number)
 }
 
 export default function MyReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [packagesList, setPackagesList] = useState<any[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState("");
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -101,12 +74,48 @@ export default function MyReviewsPage() {
   const [toast, setToast] = useState("");
 
   const [editForm, setEditForm] = useState({ rating: 5, comment: "" });
-  const [addForm, setAddForm] = useState({ packageTitle: "", rating: 5, comment: "" });
+  const [addForm, setAddForm] = useState({ rating: 5, comment: "" });
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3000);
   };
+
+  const fetchMyReviews = async () => {
+    setLoading(true);
+    try {
+      const data = await reviewApi.getMyReviews();
+      const mapped: Review[] = data.map((r: any) => ({
+        id: r._id,
+        packageTitle: r.package?.title || "Deleted Package",
+        packageImage: r.package?.images?.[0] || "/api/placeholder/80/80",
+        packageId: r.package?._id || "",
+        rating: r.rating,
+        comment: r.comment,
+        date: new Date(r.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        status: r.status,
+      }));
+      setReviews(mapped);
+    } catch {
+      showToast("Failed to fetch reviews");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPackages = async () => {
+    try {
+      const res = await packageApi.getAll({ pageSize: "100" });
+      setPackagesList(res.packages || []);
+    } catch {
+      console.error("Failed to load packages");
+    }
+  };
+
+  useEffect(() => {
+    fetchMyReviews();
+    fetchPackages();
+  }, []);
 
   const openEdit = (review: Review) => {
     setEditForm({ rating: review.rating, comment: review.comment });
@@ -114,45 +123,55 @@ export default function MyReviewsPage() {
   };
 
   const saveEdit = async () => {
+    if (!editId || !editForm.comment) return;
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setReviews((prev) =>
-      prev.map((r) =>
-        r.id === editId
-          ? { ...r, rating: editForm.rating, comment: editForm.comment, status: "pending" }
-          : r
-      )
-    );
-    setEditId(null);
-    setSaving(false);
-    showToast("Review updated — pending approval");
+    try {
+      await reviewApi.updateReview(editId, {
+        rating: editForm.rating,
+        comment: editForm.comment,
+      });
+      showToast("Review updated — pending approval");
+      setEditId(null);
+      await fetchMyReviews();
+    } catch (err: any) {
+      showToast(err.message || "Failed to update review");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const confirmDelete = () => {
-    setReviews((prev) => prev.filter((r) => r.id !== deleteId));
-    setDeleteId(null);
-    showToast("Review deleted");
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await reviewApi.deleteReview(deleteId);
+      showToast("Review deleted");
+      await fetchMyReviews();
+    } catch (err: any) {
+      showToast(err.message || "Failed to delete review");
+    } finally {
+      setDeleteId(null);
+    }
   };
 
   const submitAdd = async () => {
-    if (!addForm.packageTitle || !addForm.comment) return;
+    if (!selectedPackageId || !addForm.comment) return;
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    const newReview: Review = {
-      id: `r${Date.now()}`,
-      packageTitle: addForm.packageTitle,
-      packageImage: "/api/placeholder/80/80",
-      packageId: "new",
-      rating: addForm.rating,
-      comment: addForm.comment,
-      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-      status: "pending",
-    };
-    setReviews((prev) => [newReview, ...prev]);
-    setAddForm({ packageTitle: "", rating: 5, comment: "" });
-    setShowAdd(false);
-    setSaving(false);
-    showToast("Review submitted — pending approval");
+    try {
+      await reviewApi.createReview({
+        packageId: selectedPackageId,
+        rating: addForm.rating,
+        comment: addForm.comment,
+      });
+      showToast("Review submitted — pending approval");
+      setSelectedPackageId("");
+      setAddForm({ rating: 5, comment: "" });
+      setShowAdd(false);
+      await fetchMyReviews();
+    } catch (err: any) {
+      showToast(err.message || "Failed to submit review");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const avgRating = reviews.length
@@ -196,7 +215,11 @@ export default function MyReviewsPage() {
       </div>
 
       {/* Reviews list */}
-      {reviews.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader className="animate-spin text-brand-500" size={32} />
+        </div>
+      ) : reviews.length === 0 ? (
         <div className="text-center py-20 bg-slate-900 border border-slate-800 rounded-2xl">
           <MessageSquare size={48} className="mx-auto text-slate-600 mb-4" />
           <p className="text-slate-300 font-medium">No reviews yet</p>
@@ -316,12 +339,18 @@ export default function MyReviewsPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs text-slate-400 mb-2">Package Name</label>
-                  <input
-                    value={addForm.packageTitle}
-                    onChange={(e) => setAddForm((p) => ({ ...p, packageTitle: e.target.value }))}
-                    placeholder="e.g. Bali Paradise"
+                  <select
+                    value={selectedPackageId}
+                    onChange={(e) => setSelectedPackageId(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:border-brand-500 focus:outline-none"
-                  />
+                  >
+                    <option value="">Select a package...</option>
+                    {packagesList.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs text-slate-400 mb-2">Rating</label>
@@ -339,7 +368,7 @@ export default function MyReviewsPage() {
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-medium">Cancel</button>
-                  <button onClick={submitAdd} disabled={saving || !addForm.packageTitle || !addForm.comment} className="flex-1 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2">
+                  <button onClick={submitAdd} disabled={saving || !selectedPackageId || !addForm.comment} className="flex-1 px-4 py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2">
                     {saving ? <><Loader size={14} className="animate-spin" /> Submitting...</> : "Submit Review"}
                   </button>
                 </div>

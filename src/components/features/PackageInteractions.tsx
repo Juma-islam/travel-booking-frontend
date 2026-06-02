@@ -114,18 +114,14 @@ function AIReviewSummary({ packageId, reviews }: { packageId: string; reviews: R
   const [copied, setCopied] = useState(false);
 
   const generateSummary = async () => {
+    if (reviews.length === 0) {
+      setSummary("Not enough reviews yet to generate an AI summary. Be the first to write a review!");
+      return;
+    }
     setLoading(true);
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-      const reviewTexts = reviews.length
-        ? reviews.map((r) => r.comment)
-        : [
-            "Amazing trip! The guides were knowledgeable and the hotels were top-notch.",
-            "Great value for money. Would definitely recommend to families.",
-            "The itinerary was well-planned but some spots were a bit crowded.",
-            "Loved every moment. The food recommendations were spot on!",
-            "Good overall experience. A few minor delays but nothing major.",
-          ];
+      const reviewTexts = reviews.map((r) => r.comment);
 
       const res = await fetch(`${API_BASE}/api/ai/review-summary`, {
         method: "POST",
@@ -137,9 +133,7 @@ function AIReviewSummary({ packageId, reviews }: { packageId: string; reviews: R
       const data = await res.json();
       setSummary(data.result);
     } catch {
-      setSummary(
-        "**Overall Sentiment: Positive** ✅\n\n**Pros:**\n• Excellent guides and well-planned itinerary\n• Great value for money\n• Top-quality accommodations\n• Wonderful food recommendations\n\n**Cons:**\n• Some popular spots can get crowded\n• Minor scheduling delays reported\n\n**Verdict:** Highly recommended for families and couples seeking a premium travel experience."
-      );
+      setSummary("Failed to generate AI summary. Please try again later.");
     } finally {
       setLoading(false);
     }

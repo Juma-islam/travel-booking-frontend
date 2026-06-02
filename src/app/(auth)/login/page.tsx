@@ -76,7 +76,7 @@ export default function LoginPage() {
 
     try {
       await login({ email, password });
-      setSuccess("Logged in with demo account. Redirecting...");
+      setSuccess("Logged in successfully. Redirecting...");
       setTimeout(() => {
         const user = authService.getCurrentUser();
         router.push(user?.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
@@ -88,7 +88,14 @@ export default function LoginPage() {
     }
   };
 
-  const demoCredentials = authService.getDemoCredentials();
+  const demoCredentials = [
+    {
+      name: "Seeded Admin Account",
+      email: "admin@travelai.com",
+      password: "Admin123!",
+      role: "admin",
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-50 via-white to-accent-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">

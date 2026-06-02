@@ -259,18 +259,16 @@ export default function UserBookingsPage() {
                     {!booking.isPaid && booking.status !== "cancelled" && (
                       <button
                         onClick={async () => {
-                          await bookingApi.pay(booking._id);
-                          setBookings((prev) =>
-                            prev.map((b) =>
-                              b._id === booking._id
-                                ? { ...b, isPaid: true, status: "confirmed" }
-                                : b
-                            )
-                          );
+                          try {
+                            const { url } = await bookingApi.createCheckoutSession(booking._id);
+                            if (url) window.location.href = url;
+                          } catch (err) {
+                            alert("Failed to initiate payment");
+                          }
                         }}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-medium transition-colors"
+                        className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-medium transition-colors"
                       >
-                        Pay Now (Mock)
+                        Pay Now
                       </button>
                     )}
                     {booking.status === "pending" && (

@@ -71,9 +71,22 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500));
-    setStatus("success");
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
   };
 
   return (
@@ -206,6 +219,13 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {status === "error" && (
+                    <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs">
+                      <AlertCircle size={14} />
+                      Failed to send message. Please try again.
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={status === "loading"}
@@ -228,14 +248,14 @@ export default function ContactPage() {
               transition={{ duration: 0.6 }}
               className="space-y-6"
             >
-              {/* Map placeholder */}
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden h-64 relative flex items-center justify-center">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-accent-500/10" />
-                <div className="relative text-center">
-                  <MapPin size={40} className="mx-auto text-brand-400 mb-3" />
-                  <p className="text-white font-semibold">Bangalore, India</p>
-                  <p className="text-slate-400 text-sm">Global Headquarters</p>
-                </div>
+              {/* Map */}
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden h-64 relative">
+                <iframe
+                  title="VoyageAI Headquarters Map"
+                  src="https://maps.google.com/maps?q=Bangalore,%20India&t=&z=12&ie=UTF8&iwloc=&output=embed"
+                  className="w-full h-full border-0 opacity-80"
+                  loading="lazy"
+                />
               </div>
 
               {/* AI Support CTA */}

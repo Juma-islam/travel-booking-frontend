@@ -1,10 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Heart, Star, Clock, ArrowRight, Trash2 } from "lucide-react";
-import { packageApi } from "@/services/api.service";
+import { authApi } from "@/services/api.service";
 
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -12,24 +12,24 @@ export default function WishlistPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load wishlist from localStorage
-    const saved = JSON.parse(localStorage.getItem("wishlist") || "[]");
-    setWishlist(saved);
-
-    if (saved.length > 0) {
-      Promise.all(saved.map((id: string) => packageApi.getById(id).catch(() => null)))
-        .then((results) => setPackages(results.filter(Boolean)))
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    setLoading(true);
+    authApi.getWishlist()
+      .then((data) => {
+        setPackages(data);
+        setWishlist(data.map((p: any) => p._id));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  const removeFromWishlist = (id: string) => {
-    const updated = wishlist.filter((w) => w !== id);
-    setWishlist(updated);
-    setPackages((prev) => prev.filter((p) => p._id !== id));
-    localStorage.setItem("wishlist", JSON.stringify(updated));
+  const removeFromWishlist = async (id: string) => {
+    try {
+      await authApi.toggleWishlist(id);
+      setWishlist((prev) => prev.filter((w) => w !== id));
+      setPackages((prev) => prev.filter((p) => p._id !== id));
+    } catch {
+      alert("Failed to remove from wishlist");
+    }
   };
 
   return (

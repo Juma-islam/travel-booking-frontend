@@ -77,10 +77,8 @@ export function LocationMap({ pkg }: { pkg: TravelPackage }) {
   const hasCoords = pkg.coordinates?.lat && pkg.coordinates?.lng;
 
   // Build Google Maps embed URL
-  const query = encodeURIComponent(`${destName}, ${country}`);
-  const embedUrl = hasCoords
-    ? `https://www.google.com/maps/embed/v1/place?key=AIzaSyD-placeholder&q=${pkg.coordinates!.lat},${pkg.coordinates!.lng}`
-    : `https://maps.google.com/maps?q=${query}&output=embed&z=10`;
+  const query = encodeURIComponent(hasCoords ? `${pkg.coordinates!.lat},${pkg.coordinates!.lng}` : `${destName}, ${country}`);
+  const embedUrl = `https://maps.google.com/maps?q=${query}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
 
   const mapsLink = `https://www.google.com/maps/search/${query}`;
 
@@ -97,18 +95,13 @@ export function LocationMap({ pkg }: { pkg: TravelPackage }) {
         </a>
       </div>
 
-      {/* Map iframe — uses OpenStreetMap as fallback (no API key needed) */}
+      {/* Map iframe — uses Google Maps embed */}
       <div className="relative h-56 bg-slate-800">
         <iframe
           title={`Map of ${destName}`}
-          src={`https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&layer=mapnik&marker=${
-            hasCoords
-              ? `${pkg.coordinates!.lat},${pkg.coordinates!.lng}`
-              : ""
-          }`}
+          src={embedUrl}
           className="w-full h-full border-0 opacity-80"
           loading="lazy"
-          sandbox="allow-scripts allow-same-origin"
         />
         {/* Overlay with destination name */}
         <div className="absolute bottom-3 left-3 bg-slate-950/90 backdrop-blur px-3 py-2 rounded-xl flex items-center gap-2">

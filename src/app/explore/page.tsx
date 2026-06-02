@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,7 +9,7 @@ import {
   X, GitCompare, Eye, Loader, LayoutGrid, List, Wand2,
 } from "lucide-react";
 import { TravelPackage } from "../../types/package";
-import { authApi, isDemoToken } from "../../services/api.service";
+import { authApi } from "../../services/api.service";
 import { useAuth } from "../../contexts/AuthContext";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -319,7 +320,13 @@ function CardSkeleton({ view }: { view: "grid" | "list" }) {
 }
 
 // â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-export default function ExplorePage() {
+function ExploreContent() {
+  const { isAuthenticated } = useAuth();
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search") || "";
+  const urlCategory = searchParams.get("category") || "All";
+  const urlMaxPrice = searchParams.get("maxPrice") ? Number(searchParams.get("maxPrice")) : 10000;
+
   const [allPackages, setAllPackages] = useState<TravelPackage[]>([]);
   const [displayedCount, setDisplayedCount] = useState(PAGE_SIZE);
   const [loading, setLoading] = useState(true);
@@ -327,12 +334,27 @@ export default function ExplorePage() {
   const [error, setError] = useState("");
 
   // Filters
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [maxPrice, setMaxPrice] = useState(10000);
+  const [search, setSearch] = useState(urlSearch);
+  const [category, setCategory] = useState(urlCategory);
+  const [maxPrice, setMaxPrice] = useState(urlMaxPrice);
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState("recommended");
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const searchVal = searchParams.get("search");
+    if (searchVal !== null) {
+      setSearch(searchVal);
+    }
+    const catVal = searchParams.get("category");
+    if (catVal !== null) {
+      setCategory(catVal);
+    }
+    const priceVal = searchParams.get("maxPrice");
+    if (priceVal !== null) {
+      setMaxPrice(Number(priceVal));
+    }
+  }, [searchParams]);
 
   // UI state
   const [view, setView] = useState<"grid" | "list">("grid");
@@ -348,13 +370,24 @@ export default function ExplorePage() {
 
   // Load all packages once
   useEffect(() => {
-    setWishlist(getWishlist());
+    if (isAuthenticated) {
+      authApi.getWishlist()
+        .then((data) => {
+          setWishlist(data.map((p: any) => p._id));
+        })
+        .catch(() => {
+          setWishlist(getWishlist());
+        });
+    } else {
+      setWishlist(getWishlist());
+    }
+
     fetch(`${API_BASE}/api/packages?pageSize=100`)
       .then((r) => r.json())
       .then((data) => setAllPackages(data.packages || []))
       .catch(() => setError("Could not load packages. Make sure the backend is running."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAuthenticated]);
 
   // Filtered + sorted list
   const filtered = useMemo(() => {
@@ -408,9 +441,22 @@ export default function ExplorePage() {
   useEffect(() => { setDisplayedCount(PAGE_SIZE); }, [search, category, maxPrice, minRating, sort]);
 
   // Wishlist toggle
-  const handleWishlist = (id: string) => {
-    toggleWishlistItem(id);
-    setWishlist(getWishlist());
+  const handleWishlist = async (id: string) => {
+    if (isAuthenticated) {
+      try {
+        const res = await authApi.toggleWishlist(id);
+        if (res.saved) {
+          setWishlist((prev) => [...prev, id]);
+        } else {
+          setWishlist((prev) => prev.filter((x) => x !== id));
+        }
+      } catch (err) {
+        console.error("Failed to toggle wishlist", err);
+      }
+    } else {
+      toggleWishlistItem(id);
+      setWishlist(getWishlist());
+    }
   };
 
   // Compare toggle
@@ -713,6 +759,18 @@ export default function ExplorePage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader className="animate-spin text-brand-400" size={32} />
+      </div>
+    }>
+      <ExploreContent />
+    </Suspense>
   );
 }
 

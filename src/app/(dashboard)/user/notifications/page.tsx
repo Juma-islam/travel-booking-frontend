@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Bell,
@@ -12,7 +12,9 @@ import {
   Trash2,
   Check,
   BellOff,
+  Loader,
 } from "lucide-react";
+import { notificationApi, BackendNotification } from "../../../../services/api.service";
 
 type NotifType = "booking" | "ai" | "promo" | "system" | "alert";
 
@@ -33,78 +35,43 @@ const typeConfig: Record<NotifType, { icon: React.ReactNode; color: string; bg: 
   alert: { icon: <AlertCircle size={16} />, color: "text-red-400", bg: "bg-red-500/10" },
 };
 
-const INITIAL: Notification[] = [
-  {
-    id: "1",
-    type: "booking",
-    title: "Booking Confirmed!",
-    message: "Your booking for European Adventure has been confirmed. Travel dates: Jun 10 – Jun 20.",
-    time: "2 hours ago",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "ai",
-    title: "AI Recommendation Ready",
-    message: "Based on your travel history, we've found 3 new destinations you might love. Check them out!",
-    time: "5 hours ago",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "promo",
-    title: "Limited Time Offer 🎉",
-    message: "Use code SUMMER25 for 25% off all beach packages this week only. Expires in 48 hours.",
-    time: "1 day ago",
-    read: false,
-  },
-  {
-    id: "4",
-    type: "system",
-    title: "Profile Updated",
-    message: "Your profile information has been successfully updated.",
-    time: "2 days ago",
-    read: true,
-  },
-  {
-    id: "5",
-    type: "booking",
-    title: "Payment Received",
-    message: "We've received your payment of $2,499 for the Bali Paradise package. Invoice sent to your email.",
-    time: "3 days ago",
-    read: true,
-  },
-  {
-    id: "6",
-    type: "alert",
-    title: "Trip Reminder",
-    message: "Your trip to Tokyo starts in 7 days! Make sure your documents are ready.",
-    time: "4 days ago",
-    read: true,
-  },
-  {
-    id: "7",
-    type: "ai",
-    title: "Itinerary Generated",
-    message: "Your AI-generated 7-day Bali itinerary is ready. View and customize it in the AI Planner.",
-    time: "5 days ago",
-    read: true,
-  },
-  {
-    id: "8",
-    type: "promo",
-    title: "New Packages Available",
-    message: "12 new packages have been added to Southeast Asia. Prices start from $599.",
-    time: "1 week ago",
-    read: true,
-  },
-];
+function timeAgo(dateString: string) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
 
 const filters = ["all", "booking", "ai", "promo", "system", "alert"] as const;
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<Notification[]>(INITIAL);
+  const [notifications, setNotifications] = useState<BackendNotification[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | NotifType>("all");
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const data = await notificationApi.getMyNotifications();
+      setNotifications(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -112,16 +79,43 @@ export default function NotificationsPage() {
     ? notifications
     : notifications.filter((n) => n.type === activeFilter);
 
-  const markAllRead = () =>
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const markAllRead = async () => {
+    try {
+      await notificationApi.markAllAsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const markRead = (id: string) =>
-    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
+  const markRead = async (id: string) => {
+    const notif = notifications.find((n) => n._id === id);
+    if (notif?.read) return;
+    try {
+      await notificationApi.markAsRead(id);
+      setNotifications((prev) => prev.map((n) => n._id === id ? { ...n, read: true } : n));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const deleteNotif = (id: string) =>
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const deleteNotif = async (id: string) => {
+    try {
+      await notificationApi.deleteNotification(id);
+      setNotifications((prev) => prev.filter((n) => n._id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  const clearAll = () => setNotifications([]);
+  const clearAll = async () => {
+    try {
+      await notificationApi.deleteAllNotifications();
+      setNotifications([]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -184,7 +178,11 @@ export default function NotificationsPage() {
       </div>
 
       {/* List */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader className="animate-spin text-brand-400" size={32} />
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="text-center py-20 bg-slate-900 border border-slate-800 rounded-2xl">
           <BellOff size={48} className="mx-auto text-slate-600 mb-4" />
           <p className="text-slate-300 font-medium">No notifications</p>
@@ -196,11 +194,11 @@ export default function NotificationsPage() {
             const cfg = typeConfig[notif.type];
             return (
               <motion.div
-                key={notif.id}
+                key={notif._id}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => markRead(notif.id)}
+                onClick={() => markRead(notif._id)}
                 className={`relative flex gap-4 p-4 rounded-2xl border cursor-pointer transition-all group ${
                   notif.read
                     ? "bg-slate-900 border-slate-800 hover:border-slate-700"
@@ -223,14 +221,14 @@ export default function NotificationsPage() {
                     <p className={`font-semibold text-sm ${notif.read ? "text-slate-300" : "text-white"}`}>
                       {notif.title}
                     </p>
-                    <span className="text-xs text-slate-600 shrink-0">{notif.time}</span>
+                    <span className="text-xs text-slate-600 shrink-0">{timeAgo(notif.createdAt)}</span>
                   </div>
                   <p className="text-slate-400 text-sm mt-1 leading-relaxed">{notif.message}</p>
                 </div>
 
                 {/* Delete on hover */}
                 <button
-                  onClick={(e) => { e.stopPropagation(); deleteNotif(notif.id); }}
+                  onClick={(e) => { e.stopPropagation(); deleteNotif(notif._id); }}
                   className="absolute top-3 right-3 p-1 rounded-lg opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
                 >
                   <Trash2 size={13} />
